@@ -20,7 +20,6 @@ https://github.com/Immunotools/igrec_3.0
 
 References:
 
-Alexander Shlemov, Sergey Bankevich, Andrey Bzikadze, Maria A Turchaninova, Yana Safonova, Pavel A Pevzner. Reconstructing Antibody Repertoires from Error-Prone Immunosequencing Reads. J
-Immunol. 2017 Nov 1;199(9):3369-3380.
+Alexander Shlemov, Sergey Bankevich, Andrey Bzikadze, Maria A Turchaninova, Yana Safonova, Pavel A Pevzner. Reconstructing Antibody Repertoires from Error-Prone Immunosequencing Reads. J Immunol. 2017 Nov 1;199(9):3369-3380.
 
 Yana Safonova, Stefano Bonissone, Eugene Kurpilyansky, Ekaterina Starostina, Alla Lapidus, Jeremy Stinson, Laura DePalatis, Wendy Sandoval, Jennie Lill and Pavel A. Pevzner. IgRepertoireConstructor: a novel algorithm for antibody repertoire construction and immunoproteogenomics analysis. Bioinformatics. 2015 Jun 15;31(12):i53-i61.
