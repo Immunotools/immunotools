@@ -1,0 +1,23 @@
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8.2)
+      message(FATAL_ERROR "IgReC requires gcc version 4.8.2 or later")
+  endif()
+elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.8)
+      message(FATAL_ERROR "IgReC requires clang version 3.8 or later")
+  endif()
+else()
+    message(WARNING "Unsupported compiler is detected. IgReC compilation was not tested on it and may fail")
+endif()
+
+find_package(OpenMP QUIET)
+link_libraries(z)
+link_libraries(bz2)
+link_libraries(pthread)
+
+add_definitions(-DSEQAN_HAS_ZLIB=1)
+add_definitions(-DSEQAN_HAS_BZIP2=1)
+
+set(BOOST_ROOT "${EXT_DIR}/include")
+set(Boost_USE_MULTITHREADED ON)
+find_package(Boost REQUIRED)

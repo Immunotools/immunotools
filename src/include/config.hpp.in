@@ -1,0 +1,8 @@
+#ifndef __IGREC_CONFIG_HPP__
+#define __IGREC_CONFIG_HPP__
+
+#cmakedefine IGREC_USE_JEMALLOC
+#cmakedefine IGREC_USE_TCMALLOC
+#cmakedefine IGREC_DEBUG_LOGGING
+
+#endif // __IGREC_CONFIG_HPP__
