@@ -1,5 +1,5 @@
 IgReC
-Tools for processing immunosequencing (Rep-seq) data: error-correction, VDJ alignment, finding FRs / CDRs, and finding SHMs
+Tools for processing immunosequencing (Rep-seq) data: error correction of Rep-seq reads, VDJ alignment, finding FRs / CDRs, and finding SHMs
 
 Current contributors:
 
