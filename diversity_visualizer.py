@@ -84,7 +84,7 @@ def main(input_dir, output_dir, output_log):
     os.mkdir(plot_dir)
     output_log.info("==== Visualization of diversity statistics ====")
     output_log.info("\n== Output VJ statistics ==")
-    visualize_vj_stats.main(["", cdr_details, shm_details, output_dir, output_log])
+    visualize_vj_stats.main(["", cdr_details, output_dir, plot_dir, output_log])
 
     output_log.info("\n== Output CDR / FR statistics ==")
     visualize_cdr_stats.main(cdr_details, plot_dir, output_log)

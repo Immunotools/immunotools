@@ -18,83 +18,84 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
+def GetBaseName(gene_name):
+    return gene_name.split('*')[0]
+
 class VJMatrix:
-    def __init__(self, v_hits, j_hits):
-        self.num_records = len(v_hits)
+    def __init__(self, vj_df):
+        self.vj_df = vj_df
+        self._CreateVJDicts()
+        self._CreateVJMatrix()
+
+    def _CreateVJDicts(self):
         self.vj_dict = dict()
-        self.v_set = set()
-        self.j_set = set()
-        for i in range(0, len(v_hits)):
-            self.v_set.add(v_hits[i])
-            self.j_set.add(j_hits[i])
-            vj_key = v_hits[i], j_hits[i]
-            if vj_key not in self.vj_dict:
-                self.vj_dict[vj_key] = 0
-            self.vj_dict[vj_key] += 1
+        self.v_dict = dict()
+        self.j_dict = dict()
+        for i in range(len(self.vj_df)):
+            base_v = GetBaseName(self.vj_df['V_hit'][i])
+            base_j = GetBaseName(self.vj_df['J_hit'][i])
+            if (base_v, base_j) not in self.vj_dict:
+                self.vj_dict[(base_v, base_j)] = 0
+            self.vj_dict[(base_v, base_j)] += 1
+            if base_v not in self.v_dict:
+                self.v_dict[base_v] = 0
+            self.v_dict[base_v] += 1
+            if base_j not in self.j_dict:
+                self.j_dict[base_j] = 0
+            self.j_dict[base_j] += 1
+        self.sorted_vs = sorted(self.v_dict.keys())
+        self.sorted_js = sorted(self.j_dict.keys())
 
-    def _ComputeVJHitsAbundances(self):
-        v_abundance = dict()
-        j_abundance = dict()
+    def _FilterLowAbundantVGenes(self):
+        self.used_vs = []
+        self.abundant_vj_matrix = []
+        for i in range(len(self.vj_matrix)):
+            sum_percentages = sum(self.vj_matrix[i])
+            if sum_percentages < 0.1:
+                continue
+            self.abundant_vj_matrix.append(self.vj_matrix[i])
+            self.used_vs.append(self.sorted_vs[i])
+
+    def _CreateVJMatrix(self):
+        self.vj_matrix = []
+        for v in self.sorted_vs:
+            self.vj_matrix.append([0] * len(self.sorted_js))
         for vj in self.vj_dict:
-            if vj[0] not in v_abundance:
-                v_abundance[vj[0]] = 0
-            v_abundance[vj[0]] += self.vj_dict[vj]
-            if vj[1] not in j_abundance:
-                j_abundance[vj[1]] = 0
-            j_abundance[vj[1]] += self.vj_dict[vj]
-        return v_abundance, j_abundance
+            v_index = self.sorted_vs.index(vj[0])
+            j_index = self.sorted_js.index(vj[1])
+            self.vj_matrix[v_index][j_index] = float(self.vj_dict[vj]) / len(self.vj_df) * 100
+        self._FilterLowAbundantVGenes()
 
-    def _FilterVJByThreshold(self, v_abun, j_abun, size_threshold):
-        sorted_v = sorted(v_abun.items(), key=operator.itemgetter(1), reverse=True)
-        sorted_j = sorted(j_abun.items(), key=operator.itemgetter(1), reverse=True)
-        #print sorted_v
-        #print sorted_j
-        min_v = min(len(sorted_v), 24)
-        min_j = min(len(sorted_j), 20)
-        v_abun_large = [sorted_v[i][0] for i in range(0, min_v)] #if float(sorted_v[i][1]) / float(self.num_records) < .4]
-        j_abun_large = [sorted_j[i][0] for i in range(0, min_j)] #if float(sorted_j[i][1]) / float(self.num_records) < .4]
-        #print v_abun_large
-        #print j_abun_large
-        return v_abun_large, j_abun_large
+    def OutputHeatmap(self, output_fname, log):
+        plt.figure(figsize = (10, 15))
+        sns.heatmap(np.array(self.abundant_vj_matrix), xticklabels = self.sorted_js, yticklabels = self.used_vs, cmap = 'jet')
+        plt.yticks(rotation = 0, fontsize = 10)
+        plt.xticks(rotation = 90, fontsize = 10)
+        utils.output_figure(output_fname, "VJ heatmap for the most abundant VJ combinations", log)
 
-    def CreateTable(self, size_threshold = 0):
-        v_abun, j_abun = self._ComputeVJHitsAbundances()
-        v_abun_l, j_abun_l = self._FilterVJByThreshold(v_abun, j_abun, size_threshold)
-        sorted_v_abun_l = sorted(v_abun_l)
-        sorted_j_abun_l = sorted(j_abun_l)
-        table = [[0] * len(sorted_v_abun_l) for j in sorted_j_abun_l]
-        #print table
-        for vj in self.vj_dict:
-            if vj[0] in sorted_v_abun_l and vj[1] in sorted_j_abun_l:
-                v_index = sorted_v_abun_l.index(vj[0])
-                j_index = sorted_j_abun_l.index(vj[1])
-                table[j_index][v_index] = self.vj_dict[vj]
-        sorted_j_abun_l.reverse()
-        return table, sorted_v_abun_l, sorted_j_abun_l
+    def OutputVUsage(self, output_fname, log):
+        plt.figure(figsize = (10, 8))
+        perc_list = [float(self.v_dict[v]) / len(self.vj_df) * 100 for v in self.sorted_vs]
+        plt.bar(range(len(self.sorted_vs)), perc_list)
+        plt.xticks(range(len(self.sorted_vs)), self.sorted_vs, rotation = 90, fontsize = 10)
+        plt.ylabel('% of sequences')
+        utils.output_figure(output_fname, "Usage of V genes", log)
 
-def visualize_vj_heatmap(labeling_df, output_pdf, log):
-    v_hits = list(labeling_df['V_hit'])
-    j_hits = list(labeling_df['J_hit'])
-    if len(v_hits) == 0 or len(j_hits) == 0:
-        log.info("VJ data-frame contains 0 records. VJ usage visualization will be skipped")
-        return
-    vj_matrix = VJMatrix(v_hits, j_hits)
-    log.info(str(len(vj_matrix.vj_dict)) + " VJ pairs were extracted. Pairs are presented by " +
-             str(len(vj_matrix.v_set)) + " V genes & " + str(len(vj_matrix.j_set)) + " J genes")
-    table, v, j = vj_matrix.CreateTable(100)
-    mplt.rcParams.update({'font.size': 20})
-    #plt.figure(figsize=(15, 15))
-    f, ax = plt.subplots(figsize=(10, 15))
-    sns.heatmap(table, cmap = plt.cm.jet, xticklabels = v, yticklabels = j, ax = ax)
-    ax.tick_params(labelsize = 16)
-    x = [i + 0.0 for i in range(0, len(v))]
-    y = [i + .5 for i in range(0, len(j))]
-    plt.xticks(x, v, rotation=60, fontsize=14)
-    plt.yticks(y, j, rotation='horizontal', fontsize=14)
-    utils.output_figure(output_pdf, "VJ heatmap for the most abundant VJ combinations", log)
+    def OutputJUsage(self, output_fname, log):
+        plt.figure(figsize = (10, 8))
+        perc_list = [float(self.j_dict[j]) / len(self.vj_df) * 100 for j in self.sorted_js]
+        plt.bar(range(len(self.sorted_js)), perc_list)
+        plt.xticks(range(len(self.sorted_js)), self.sorted_vs, rotation = 90, fontsize = 10)
+        plt.ylabel('% of sequences')
+        utils.output_figure(output_fname, "Usage of J genes", log)
+
+def visualize_vj_stats(labeling_df, output_dir, log):
+    vj_matrix = VJMatrix(labeling_df)
+    vj_matrix.OutputHeatmap(os.path.join(output_dir, 'vj_heatmap'), log)
+    vj_matrix.OutputVUsage(os.path.join(output_dir, 'v_usage'), log)
+    vj_matrix.OutputJUsage(os.path.join(output_dir, 'j_usage'), log)
 
 ############################################################################
-
 def checkout_output_dir_fatal(output_dir, log):
     if not os.path.exists(output_dir):
         log.info("ERROR: Directory " + output_dir + " was not found")
@@ -108,15 +109,15 @@ def main(argv):
     warnings.filterwarnings('ignore')
     if len(argv) != 5:
         print "Invalid input parameters"
-        print "python visualize_vj_stats.py cdr_details.txt shm_details.txt output_dir logger"
+        print "python visualize_vj_stats.py cdr_details.txt output_dir plot_dir logger"
         return
     vj_df = pd.read_table(argv[1], delim_whitespace = True)
-    output_dir = argv[3]
-    plot_dir = os.path.join(output_dir, "plots")
-    log = utils.get_logger_by_arg(argv[4], "diversity_analyzer_vis")
+    output_dir = argv[2]
+    plot_dir = argv[3]
+    log = argv[4] #utils.get_logger_by_arg(plot_dir, "diversity_analyzer_vis")
     checkout_output_dir_fatal(output_dir, log)
     checkout_output_dir(plot_dir)
-    visualize_vj_heatmap(vj_df, os.path.join(plot_dir, "vj_heatmap"), log)
+    visualize_vj_stats(vj_df, plot_dir, log)
 
 if __name__ == "__main__":
     main(sys.argv)
