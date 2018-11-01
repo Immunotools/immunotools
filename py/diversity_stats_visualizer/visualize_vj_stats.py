@@ -18,9 +18,6 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
-import visualize_cdr_stats
-import visualize_shm_stats
-
 class VJMatrix:
     def __init__(self, v_hits, j_hits):
         self.num_records = len(v_hits)
@@ -119,11 +116,7 @@ def main(argv):
     log = utils.get_logger_by_arg(argv[4], "diversity_analyzer_vis")
     checkout_output_dir_fatal(output_dir, log)
     checkout_output_dir(plot_dir)
-    log.info("== Output VJ statistics")
     visualize_vj_heatmap(vj_df, os.path.join(plot_dir, "vj_heatmap"), log)
-    log.info("")
-    visualize_cdr_stats.main(argv[1], os.path.join(plot_dir, "cdr_plots"), log)
-    visualize_shm_stats.main(argv[2], plot_dir, output_dir, log)
 
 if __name__ == "__main__":
     main(sys.argv)

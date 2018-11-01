@@ -22,9 +22,7 @@ sys.path.append(visualizer_dir)
 
 import process_cfg
 import support
-
-import visualize_vj_stats
-import html_report_writer
+import diversity_visualizer
 
 test_reads = os.path.join(home_directory, "test_dataset/merged_reads.fastq")
 test_dir = "divan_test"
@@ -40,7 +38,7 @@ def DomainParamCorrect(domain_str):
     return domain_str == "imgt" or domain_str == "kabat"
 
 def LociParamIsIg(loci_str):
-    return loci_str == "IG" or loci_str == "IGH" or loci_str == "IGK" or loci_str == "IGL"
+    return loci_str == "IG" or loci_str == "IGH" or loci_str == "IGK" or loci_str == "IGL" or loci_str == 'all'
 
 organism_dict = {'human' : 'human', 'mouse' : 'mouse', 'rat' : 'rat',
                  'rabbit' : 'rabbit', 'rhesus-monkey' : 'rhesus_monkey',
@@ -77,11 +75,14 @@ def SetOutputParams(params, log):
     params.config_dir = os.path.join(params.output_dir, "configs")
     params.cdr_config_file = os.path.join(cdr_labeler_config_dir, "config.info")
     params.vj_finder_config_file = os.path.join(vj_finder_config_dir, "config.info")
+    params.visualizer_dir = os.path.join(params.output_dir, 'visualizer')
 
 def PrepareOutputDir(params):
     if os.path.exists(params.output_dir):
         shutil.rmtree(params.output_dir)
     os.mkdir(params.output_dir)
+    if not params.skip_plots:
+        os.mkdir(params.visualizer_dir)
 
 def PrintParams(params, log):
     log.info(tool_name + " parameters:")
@@ -89,7 +90,8 @@ def PrintParams(params, log):
     log.info("  Output directory:\t" + params.output_dir + "\n")
     log.info("  Domain system:\t" + params.domain_system)
     log.info("  Loci:\t\t\t" + params.loci)
-    log.info("  Organism:\t\t" + params.organism + "\n")
+    log.info("  Organism:\t\t" + params.organism)
+    log.info("  Output plots:\t\t" + str(not params.skip_plots) + '\n')
 
 ########################################################################################################################
 
@@ -213,7 +215,7 @@ def main(argv):
 
     optional_args.add_argument('--skip-plots',
                                action='store_const',
-                               const=True,
+                               const=False,
                                dest = "skip_plots",
                                help = "Skip drawing plots")
 
@@ -256,15 +258,8 @@ def main(argv):
         cdr_command_line = run_cdr_labeler + " " + params.cdr_labeler_config_file
         support.sys_call(cdr_command_line, log)
         if not params.skip_plots:
-            log.info("\n==== Visualization of diversity statistics ====")
-            visualize_vj_stats.main(["", os.path.join(params.output_dir, "cdr_details.txt"),
-                                 os.path.join(params.output_dir, "shm_details.txt"),
-                                 params.output_dir, log])
-            log.info("\n==== Annotation report creation ====")
-            html_report_writer.main(os.path.join(params.output_dir, "cdr_details.txt"),
-                                os.path.join(params.output_dir, "shm_details.txt"),
-                                os.path.join(params.output_dir, "plots"),
-                                os.path.join(params.output_dir, "annotation_report.html"), log)
+            log.info("")
+            diversity_visualizer.main(params.output_dir, params.visualizer_dir, log)
         Cleanup(params, log)
         log.info("\nThank you for using " + tool_name + "!\n")
     except (KeyboardInterrupt):

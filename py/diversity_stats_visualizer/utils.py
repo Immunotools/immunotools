@@ -1,5 +1,6 @@
 import logging
 import sys
+import imp
 
 import matplotlib as mplt
 mplt.use('Agg')
@@ -36,3 +37,14 @@ hydrophoby_dict = {'L' : 100, 'I' : 100, 'F' : 92, 'W' : 84, 'V' : 79, 'M' : 74,
 
 hydro_min = -100
 hydro_max = 100
+
+###################################################
+def CheckPackageFatal(package_name, log):
+    try:
+        imp.find_module(package_name)
+        found = True
+    except ImportError:
+        found = False
+    if not found:
+        log.info("ERROR: package " + package_name + ' is not installed. Please look manual for installation details')
+        sys.exit(1) 

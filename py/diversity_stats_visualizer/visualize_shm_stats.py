@@ -380,7 +380,6 @@ def output_aa_freq(aa_freq, output_fname, log):
     log.info("Amino acid substitution matrix was written to " + output_fname)
 
 def main(shm_df_fname, plot_dir, output_dir, log):
-    log.info("== Output SHMs statistics")
     shm_df = SHMs(shm_df_fname)
     log.info(str(len(shm_df)) + " records were extracted from " + shm_df_fname)
     if len(shm_df) == 0:

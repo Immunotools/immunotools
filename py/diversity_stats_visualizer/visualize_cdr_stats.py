@@ -206,7 +206,6 @@ def main(df_fname, output_dir, log):
         sys.exit(1)
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
-    log.info("== Output CDR statistics")
     vj_df = pd.read_table(df_fname, delim_whitespace = True)
     if len(vj_df['Read_name']) == 0:
         log.info("CDR data-frame contains 0 records. CDR visualization will be skipped")
@@ -214,7 +213,6 @@ def main(df_fname, output_dir, log):
     output_cdrs_stats_for_locus(vj_df, "IGH", output_dir, log)
     output_cdrs_stats_for_locus(vj_df, "IGK", output_dir, log)
     output_cdrs_stats_for_locus(vj_df, "IGL", output_dir, log)
-    log.info("")
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:
