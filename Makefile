@@ -20,15 +20,6 @@ cmake:
 igrec: cmake
 	$(MAKE) -C build/release all
 
-rpm: igrec
-	cd build/release && cpack -G RPM
-
-deb: igrec
-	cd build/release && cpack -G DEB
-
-tgz: igrec
-	cd build/release && cpack -G TGZ
-
 install: igrec
 	cd build/release && cmake -P cmake_install.cmake
 

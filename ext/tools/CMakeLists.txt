@@ -6,4 +6,4 @@
 ############################################################################
 
 add_definitions(-w)
-add_subdirectory(metis-5.1.0)
+#add_subdirectory(metis-5.1.0)
