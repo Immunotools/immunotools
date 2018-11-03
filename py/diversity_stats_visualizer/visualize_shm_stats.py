@@ -89,88 +89,91 @@ class SHMs:
         for it in self.shm_dict:
             yield it
 
-
 isotype_colors = {'IGH': 'b', 'IGK': 'g', 'IGL': 'r'}
 
-def output_shms_pos(all_shms_pos, colors, output_prefix, log):
-    for isotype in all_shms_pos:
-        if len(all_shms_pos[isotype]) < 10:
+############################### NUMBER of SHMs per GENE #################################################
+def OutputGeneSHMPlot(gene_shms, gene_name, gene_length, num_aligned_seqs, output_fname, log):
+    nucl_dict = {'A' : [0] * gene_length, 'C' : [0] * gene_length, 'G' : [0] * gene_length, 'T' : [0] * gene_length}
+    num_shms = 0
+    for shm in gene_shms:
+        if not shm.is_substitution() or not nucl_is_valid(shm.read_nucl):
             continue
-        plt.hist(all_shms_pos[isotype], bins = 100, color = colors[isotype], alpha = .75)
-        plt.xlabel("#SHM in " + isotype + "V gene segment", fontsize = 16)
-        plt.ylabel("# sequences", fontsize = 16)
-        plt.xticks(fontsize = 14)
-        plt.yticks(fontsize = 14)
-        plt.xlim(0, .75)
-        output_fname = output_prefix + "_" + isotype + "V_pos"
-        utils.output_figure(output_fname, "Distribution of SHM relative positions in " + isotype + "V segments", log)
+        nucl_dict[shm.read_nucl][shm.gene_pos] += 1
+        num_shms += 1
+    for nucl in nucl_dict:
+        for i in range(len(nucl_dict[nucl])):
+            nucl_dict[nucl][i] = float(nucl_dict[nucl][i]) / num_aligned_seqs
+    x = range(gene_length)
+    plt.figure()
+    plt.bar(x, [sum(y) for y in zip(nucl_dict['A'], nucl_dict['C'], nucl_dict['G'], nucl_dict['T'])], color = 'b', label = 'A')
+    plt.bar(x, [sum(y) for y in zip(nucl_dict['A'], nucl_dict['C'], nucl_dict['G'])], color = 'g', label = 'C')
+    plt.bar(x, [sum(y) for y in zip(nucl_dict['A'], nucl_dict['C'])], color = 'r', label = 'G')
+    plt.bar(x, nucl_dict['T'], color = 'orange', label = 'T')
+    plt.legend(loc = 'upper center', ncol = 4)
+    plt.ylim(0, 1.1)
+    plt.xlabel('Position')
+    plt.ylabel('Fraction of sequences')
+    plt.title(str(num_aligned_seqs) + ' sequences were aligned to ' + gene_name)
+    utils.output_figure(output_fname, "SHM position in " + gene_name, log)
 
-def output_num_shms(num_all_shms, colors, output_prefix, log):
-    pos = []
-    labels = []
-    cols = []
-    for isotype in num_all_shms:
-        if len(num_all_shms[isotype]) > 0:
-            pos.append(num_all_shms[isotype])
-            labels.append(str(isotype))
-            cols.append(colors[isotype])
-    plt.hist(pos, bins = 50, color = cols, alpha = .75, label = labels)
-    plt.legend(loc = 'upper center', ncol = len(pos), fontsize = 16)
-    plt.xlabel("# of SHM in V gene segment", fontsize = 16)
-    plt.ylabel("# SHMs", fontsize = 16)
-    plt.xticks(fontsize = 14)
-    plt.yticks(fontsize = 14)
-    plt.xlim(0, 150)
-    output_fname = output_prefix + "_shms_number"
-    utils.output_figure(output_fname, "Distribution of # SHMs in V segments", log)
+def OutputSHMsForVGenes(shm_df, output_config):
+    gene_type_dict = dict()
+    gene_len = dict()
+    num_aligned = dict()
+    for it in shm_df:
+        if it.segment not in gene_type_dict:
+            gene_type_dict[it.segment] = dict()
+        segment_dict = gene_type_dict[it.segment]
+        gene_name = utils.GetBaseName(it.gene_name)
+        if gene_name not in gene_type_dict[it.segment]:
+            gene_type_dict[it.segment][gene_name] = []
+            gene_len[gene_name] = 0
+            num_aligned[gene_name] = 0
+        gene_type_dict[it.segment][gene_name].extend(shm_df[it])
+        gene_len[gene_name] = max(gene_len[gene_name], it.gene_len)
+        num_aligned[gene_name] += 1
+    for segment in gene_type_dict:
+        segment_dict = gene_type_dict[segment]
+        for gene_name in segment_dict:
+            num_aligned_seq = num_aligned[gene_name]
+            if num_aligned_seq < 10:
+                continue
+            output_fname = os.path.join(output_config.GetSHMDirBySegment(segment), gene_name)
+            OutputGeneSHMPlot(segment_dict[gene_name], gene_name, gene_len[gene_name], num_aligned[gene_name], output_fname, output_config.Log())
+            output_config.AddSHMFileForSegment(segment, output_fname)
 
-def output_shm_stats_for_isotype(num_shms, shm_pos, isotype, output_prefix, log):
-    plt.figure(1)
-    plt.subplot(211)
-    # plot for SHM positions
-    plt.hist(shm_pos, color = isotype_colors[isotype], alpha = .75, bins = 50)
-    #cdr_color = "#EFBEBE"
-    #plt.gca().add_patch(patches.Rectangle((cdr_positions[isotype]['CDR1'][0], 0),
-    #                                      cdr_positions[isotype]['CDR1'][1] - cdr_positions[isotype]['CDR1'][0],
-    #                                      max(n) + 2, facecolor= cdr_color, lw = 0))
-    #plt.gca().add_patch(patches.Rectangle((cdr_positions[isotype]['CDR2'][0], 0),
-    #                                      cdr_positions[isotype]['CDR2'][1] - cdr_positions[isotype]['CDR2'][0],
-    #                                      max(n) + 2, facecolor= cdr_color, lw = 0))
-    #plt.gca().add_patch(patches.Rectangle((cdr_positions[isotype]['CDR3'][0], 0),
-    #                                      cdr_positions[isotype]['CDR3'][1] - cdr_positions[isotype]['CDR3'][0],
-    #                                      max(n) + 2, facecolor= cdr_color, lw = 0))
-    #n, bins, p = pylab.hist(shm_pos, color = isotype_colors[isotype], bins = 50)
-    plt.xlabel("Relative position of " + isotype + "V SHM in read", fontsize = 16)
-    plt.ylabel("# SHMs", fontsize = 16)
-    plt.xticks(fontsize = 14)
-    plt.yticks(fontsize = 14)
-    plt.title("SHMs in " + isotype + "V", fontsize = 18)
-    # plot for SHM number
-    plt.subplot(212)
-    plt.hist(num_shms, color = isotype_colors[isotype], bins = 50, alpha = .75)
-    plt.xlabel("# SHMs in " + isotype + "V", fontsize = 16)
+############################### NUMBER of SHMs per ISOTYPE #################################################
+def output_shm_stats_for_isotype(num_shms, locus, output_fname, log):
+    plt.hist(num_shms, color = isotype_colors[locus], bins = 50, alpha = .75)
+    plt.xlabel("# SHMs in " + locus + "V", fontsize = 16)
     plt.ylabel("# sequences", fontsize = 16)
     plt.xticks(fontsize = 14)
     plt.yticks(fontsize = 14)
-    output_fname = output_prefix + "_" + isotype + "V"
-    utils.output_figure(output_fname, "Distribution of # SHMs in " + isotype + "V segments", log)
+    plt.title('# SHMs in ' + locus + 'V' + ' sequences')
+    utils.output_figure(output_fname, "Distribution of # SHMs in " + locus + "V segments", log)
 
-def visualize_v_mutations_stats(shms_df, output_fname, log):
-    all_shms_pos = {'IGH': [], 'IGK': [], 'IGL': []}
-    num_all_shms = {'IGH': [], 'IGK': [], 'IGL': []}
-    for it in shms_df:
+def ComputeNumSHMsInLoci(shm_df):
+    locus_dict = dict()
+    for it in shm_df:
         if not it.is_variable():
             continue
-        read_shms = shms_df[it]
-        for shm in read_shms:
-            all_shms_pos[it.chain_type].append(float(shm.read_pos) / float(it.read_len))
-        num_all_shms[it.chain_type].append(len(shms_df[it]))
-    for iso in num_all_shms:
-        if len(num_all_shms[iso]) < 10:
-            log.info("# SHMs for " + iso + " is too small (" + str(len(num_all_shms[iso])) + "). Plot drawing was skipped")
-            continue
-        output_shm_stats_for_isotype(num_all_shms[iso], all_shms_pos[iso], iso, output_fname, log)
+        if it.chain_type not in locus_dict:
+            locus_dict[it.chain_type] = []
+        locus_dict[it.chain_type].append(len(shm_df[it]))
+    return locus_dict
 
+def visualize_v_mutations_stats(shms_df, output_config):
+    num_shms_in_loci = ComputeNumSHMsInLoci(shms_df)
+    for l, fname in output_config.NumSHMIter():
+        num_shms = 0
+        if l in num_shms_in_loci:
+            num_shms = len(num_shms_in_loci[l])
+        if num_shms < 10:
+            output_config.Log().info("# sequences for " + l + " is too small (" + str(num_shms) + "). Plot drawing was skipped")
+            continue
+        output_shm_stats_for_isotype(num_shms_in_loci[l], l, fname, output_config.Log())
+
+#################################### SUBSTITUTION MATRICES ###################################################
 def get_aa_list():
     return ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
 
@@ -252,6 +255,7 @@ def visualize_nucl_substitution_matrix(shms_df, output_fname, log):
     plt.ylabel("From", fontsize = 14, rotation='horizontal')
     utils.output_figure(output_fname, "Nucleotide substitution heatmap", log)
 
+#################################### SPECIAL SHMs ###################################################
 def output_synonymous_shms(synonymous_pos, output_fname, log):
     if len(synonymous_pos) < 100:
         return
@@ -262,58 +266,6 @@ def output_synonymous_shms(synonymous_pos, output_fname, log):
     plt.xticks(fontsize = 12)
     plt.yticks(fontsize = 12)
     utils.output_figure(output_fname, "Distribution of synonymous SHM positions in V segment", log)
-
-def visualize_special_shm_positions(shm_df, syn_output_fname, special_output_fname, log):
-    synonymous_pos = []
-    stop_codon_pos = []
-    deletion_pos = []
-    insertion_pos = []
-    for it in shm_df:
-        read_shms = shm_df[it]
-        for shm in read_shms:
-            if not it.is_variable():
-                continue
-            relative_pos = float(shm.read_pos) / float(it.read_len)
-            if shm.synonymous:
-                synonymous_pos.append(relative_pos)
-            elif shm.to_stop_codon:
-                stop_codon_pos.append(relative_pos)
-            elif shm.is_deletion():
-                deletion_pos.append(relative_pos)
-            elif shm.is_insertion():
-                insertion_pos.append(relative_pos)
-    output_synonymous_shms(synonymous_pos, syn_output_fname, log)
-    pos = []
-    labels = []
-    colors = []
-    plt.figure(figsize=(12, 9))
-        #sns.distplot(synonymous_pos, hist = False, label = "Synonymous SHMs", color = 'r')
-    #if len(stop_codon_pos) > 100:
-    #    pos.append(stop_codon_pos)
-    #    labels.append('Stop codon')
-    #    colors.append('g')
-    #    #sns.distplot(stop_codon_pos, hist = False, label = "Stop codon SHMs", color = 'g')
-    if len(deletion_pos) > 10:
-        pos.append(deletion_pos)
-        labels.append('Deletions')
-        colors.append('b')
-        #sns.distplot(deletion_pos, hist = False, label = "Deletion SHMs", color = 'b')
-    if len(insertion_pos) > 10:
-        pos.append(insertion_pos)
-        labels.append('Insertions')
-        colors.append('g')
-    if len(pos) == 0:
-        log.info("Output contains very low number of special SHMs. Plot drawing will be skipped")
-        return
-    #sns.distplot(insertion_pos, hist = False, label = "Insertion SHMs", color = 'orange')
-    plt.hist(pos, color = colors, label= labels, bins = 100 / len(pos))
-    plt.xlim(0, .75)
-    plt.legend(loc = 'upper center', ncol = len(pos), fontsize = 12, bbox_to_anchor=(0.5, -0.07))
-    plt.xlabel("Relative position of V SHM in read", fontsize = 14)
-    plt.ylabel("# SHMs", fontsize = 14)
-    plt.xticks(fontsize = 12)
-    plt.yticks(fontsize = 12)
-    utils.output_figure(special_output_fname, "Distribution of indel V SHM positions in read", log)
 
 def visualize_indel_shm_lengths(shm_df, output_fname, log):
     prev_read_pos = -1
@@ -379,25 +331,23 @@ def output_aa_freq(aa_freq, output_fname, log):
         fhandler.write(aa_list[i] + "\t" + "\t".join([str(ff) for ff in aa_freq[i]]) + "\n")
     log.info("Amino acid substitution matrix was written to " + output_fname)
 
-def main(shm_df_fname, plot_dir, output_dir, log):
+#################################### MAIN ###################################################
+def main(shm_df_fname, output_config):
     shm_df = SHMs(shm_df_fname)
-    log.info(str(len(shm_df)) + " records were extracted from " + shm_df_fname)
+    output_config.Log().info(str(len(shm_df)) + " records were extracted from " + shm_df_fname)
     if len(shm_df) == 0:
-        log.info("SHM data-frame contains 0 records. SHM visualization will be skipped")
+        output_config.Log().info("SHM data-frame contains 0 records. SHM visualization will be skipped")
         return
-    visualize_v_mutations_stats(shm_df, os.path.join(plot_dir, "mutations_distribution"), log)
-    aa_freq = visualize_aa_substitution_matrix(shm_df, os.path.join(plot_dir, "aa_substitutions"), log)
-    output_aa_freq(aa_freq, os.path.join(output_dir, "aa_substitution_matrix.txt"), log)
-    # todo: output aa freq
-    visualize_nucl_substitution_matrix(shm_df, os.path.join(plot_dir, "nucl_substitutions"), log)
-    visualize_special_shm_positions(shm_df, os.path.join(plot_dir, "synonymous_shms_positions"),
-                                    os.path.join(plot_dir, "special_shms_positions"), log)
-    visualize_indel_shm_lengths(shm_df, os.path.join(plot_dir, "indel_shms_length"), log)
+    visualize_v_mutations_stats(shm_df, output_config)
+    OutputSHMsForVGenes(shm_df, output_config)
+    aa_freq = visualize_aa_substitution_matrix(shm_df, output_config.aa_matrix, output_config.Log())
+#    output_aa_freq(aa_freq, os.path.join(output_dir, "aa_substitution_matrix.txt"), log)
+    visualize_nucl_substitution_matrix(shm_df, output_config.nucl_matrix, output_config.Log())
+    visualize_indel_shm_lengths(shm_df, output_config.indel_length, output_config.Log())
 
 if __name__ == '__main__':
-    if len(sys.argv) != 5:
+    if len(sys.argv) != 3:
         print "Invalid input parameters"
-        print "python visualize_shm_stats.py shm_df.txt plot_dir output_dir logger"
+        print "python visualize_shm_stats.py shm_df.txt output_config"
         sys.exit(1)
-    log = utils.get_logger_by_arg(sys.argv[4])
-    main(sys.argv[1], sys.argv[2], sys.argv[3], log)
+    main(sys.argv[1], sys.argv[2])

@@ -141,83 +141,53 @@ def visualize_largest_group_aa_variability(labeling_df, region, region_name, out
         print "Largest " + region_name + " is not out-of-frame"
         return
     aa_seqs = [Seq(cdr).translate(to_stop=True) for cdr in max_group]
-    aa_list = [dict() for i in range(0, group_len / 3)]
+    aa_matrix = []
     for aa_seq in aa_seqs:
-        for i in range(0, len(aa_seq)):
-            if aa_seq[i] not in aa_list[i]:
-                aa_list[i][aa_seq[i]] = 0
-            aa_list[i][aa_seq[i]] += 1
-    aa_num = [len(aa) for aa in aa_list]
-    aa_large_abun = []
-    aa_large_acid = []
-    for aa in aa_list:
-        aa = sorted(aa.items(), key=operator.itemgetter(1), reverse = True)
-        sum = 0
-        for i in aa:
-            sum += i[1]
-        aa_large_abun.append(float(aa[0][1]) / float(sum) * 100)
-        aa_large_acid.append(aa[0][0])
-    aa_set = set()
-    aa_colors = get_aa_colors()
-    for aa in aa_large_acid:
-        aa_set.add(aa)
-    for aa in aa_set:
-        x_ = []
-        abun_ = []
-        for i in range(0, len(aa_large_abun)):
-            x_.append(i)
-            if aa_large_acid[i] == aa:
-                abun_.append(aa_large_abun[i])
-            else:
-                abun_.append(0)
-        df = pd.DataFrame({'x': x_, 'y' : abun_})
-        sns.barplot(x = 'x', y = 'y', data = df, color = aa_colors[amino_acids.index(aa)])
-    plt.xticks(range(0, len(aa_large_abun)), aa_large_acid, fontsize = 14)
-    plt.yticks(fontsize = 14)
-    plt.xlabel('The most abundant amino acid', fontsize = 16)
-    plt.ylabel('% ' + region_name + 's', fontsize = 16)
+        aa_row = [utils.hydrophoby_dict[aa] for aa in aa_seq]
+        aa_matrix.append(aa_row)
+    plt.figure()
+    sns.clustermap(aa_matrix, vmin = min(utils.hydrophoby_dict.values()), vmax = max(utils.hydrophoby_dict.values()), cmap = 'coolwarm', col_cluster = False)
+    plt.xlabel('Amino acid position', fontsize = 16)
     utils.output_figure(output_fname, region_name + " aa variability", log)
 
 def output_cdr_stats_for_locus(locus_df, locus_name, column_name, region_name, output_dir, log):
-    visualize_region_lengths(locus_df, column_name, locus_name + " " + region_name,
-                             os.path.join(output_dir, locus_name + "_" + region_name + "_length"), log)
-    #visualize_length_abundance_dist(locus_df, column_name, locus_name + " " + region_name,
-    #                        os.path.join(output_dir, locus_name + "_" + region_name + "_abundance_length"), log)
-    visualize_largest_region_nucls(locus_df, column_name, locus_name + " " + region_name,
-                             os.path.join(output_dir, locus_name + "_" + region_name + "_nucls"), log)
-    visualize_largest_group_aa_variability(locus_df, column_name, locus_name + " " + region_name,
-                             os.path.join(output_dir, locus_name + "_" + region_name + "_aa"), log)
+    length_fname = os.path.join(output_dir, locus_name + "_" + region_name + "_length")
+    visualize_region_lengths(locus_df, column_name, locus_name + " " + region_name, length_fname, log)
+    nucl_fname = os.path.join(output_dir, locus_name + "_" + region_name + "_nucls")
+    visualize_largest_region_nucls(locus_df, column_name, locus_name + " " + region_name, nucl_fname, log)
+    aa_fname = os.path.join(output_dir, locus_name + "_" + region_name + "_aa")
+    visualize_largest_group_aa_variability(locus_df, column_name, locus_name + " " + region_name, aa_fname, log)
+    return length_fname, nucl_fname, aa_fname
 
-def output_cdrs_stats_for_locus(vj_df, locus_name, output_dir, log):
+def output_cdrs_stats_for_locus(vj_df, locus_name, output_config):
     locus_df = vj_df.loc[vj_df['Chain_type'] == locus_name]
     num_records = len(vj_df['Read_name'])
     num_locus_records = len(locus_df['Read_name'])
     if float(num_locus_records) / float(num_records) < .05 or num_locus_records < 10:
-        log.info("Output contains very low number (" + str(num_locus_records) + ") of " + locus_name + " records. Drawing plots was skipped")
+        output_config.Log().info("Output contains very low number (" + str(num_locus_records) + ") of " + locus_name + " records. Drawing plots was skipped")
         return
-    log.info("Visualization of CDR statistics for " + locus_name + " locus")
-    output_cdr_stats_for_locus(locus_df, locus_name, "CDR1_nucls", "CDR1", output_dir, log)
-    output_cdr_stats_for_locus(locus_df, locus_name, "CDR2_nucls", "CDR2", output_dir, log)
-    output_cdr_stats_for_locus(locus_df, locus_name, "CDR3_nucls", "CDR3", output_dir, log)
+    output_config.Log().info("Visualization of CDR statistics for " + locus_name + " locus")
+    region_column_names = ['CDR1_nucls', 'CDR2_nucls', 'CDR3_nucls']
+    region_names = ['CDR1', 'CDR2', 'CDR3']
+    for col_name, region_name in zip(region_column_names, region_names):
+        f1, f2, f3 = output_cdr_stats_for_locus(locus_df, locus_name, col_name, region_name, output_config.cdr_plot_dir, output_config.Log())
+        output_config.AddCDRNames(locus_name, region_name, f1, f2, f3)
 
-def main(df_fname, output_dir, log):
+def main(df_fname, output_config):
     if not os.path.exists(df_fname):
-        log.info("File containing CDR details " + df_fname + " was not found")
+        output_config.Log().info("File containing CDR details " + df_fname + " was not found")
         sys.exit(1)
-    if not os.path.exists(output_dir):
-        os.mkdir(output_dir)
     vj_df = pd.read_table(df_fname, delim_whitespace = True)
     if len(vj_df['Read_name']) == 0:
-        log.info("CDR data-frame contains 0 records. CDR visualization will be skipped")
+        output_config.Log().info("CDR data-frame contains 0 records. CDR visualization will be skipped")
         return
-    output_cdrs_stats_for_locus(vj_df, "IGH", output_dir, log)
-    output_cdrs_stats_for_locus(vj_df, "IGK", output_dir, log)
-    output_cdrs_stats_for_locus(vj_df, "IGL", output_dir, log)
+    loci = ['IGH', 'IGK', 'IGL']
+    for l in loci:
+        output_cdrs_stats_for_locus(vj_df, l, output_config)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
+    if len(sys.argv) != 3:
         print "Invalid input parameters"
-        print "python visualize_cdr_stats.py cdr_details.txt output_dir logger"
+        print "python visualize_cdr_stats.py cdr_details.txt output_config"
         sys.exit(1)
-    log = utils.get_logger_by_arg(sys.argv[3], "cdr_visualization")
-    main(sys.argv[1], sys.argv[2], log)
+    main(sys.argv[1], sys.argv[2])

@@ -14,6 +14,7 @@ sys.path.append(visualizer_dir)
 import process_cfg
 import support
 import utils
+import plot_output_config
 import visualize_vj_stats
 import visualize_cdr_stats
 import visualize_shm_stats
@@ -78,23 +79,21 @@ def CheckModuleExistanceFatal(log):
 
 #######################################################################################
 def main(input_dir, output_dir, output_log):
-    CheckModuleExistanceFatal(output_log)
-    cdr_details, shm_details = CheckInputFilesFatal(input_dir, output_log)
-    plot_dir = os.path.join(output_dir, VisualizerConfig.plot_dir)
-    os.mkdir(plot_dir)
-    output_log.info("==== Visualization of diversity statistics ====")
-    output_log.info("\n== Output VJ statistics ==")
-    visualize_vj_stats.main(["", cdr_details, output_dir, plot_dir, output_log])
+    output_config = plot_output_config.OutputConfig(output_dir, output_log)
+    CheckModuleExistanceFatal(output_config.Log())
+    cdr_details, shm_details = CheckInputFilesFatal(input_dir, output_config.Log())
+    output_config.Log().info("==== Visualization of diversity statistics ====")
+    output_config.Log().info("\n== Output VJ statistics ==")
+    visualize_vj_stats.main(cdr_details, output_config)
 
-    output_log.info("\n== Output CDR / FR statistics ==")
-    visualize_cdr_stats.main(cdr_details, plot_dir, output_log)
+    output_config.Log().info("\n== Output CDR / FR statistics ==")
+    visualize_cdr_stats.main(cdr_details, output_config)
 
-    output_log.info("\n== Output SHM statistics ==")
-    visualize_shm_stats.main(shm_details, plot_dir, output_dir, output_log)
+    output_config.Log().info("\n== Output SHM statistics ==")
+    visualize_shm_stats.main(shm_details, output_config)
 
-    output_log.info("\n==== Annotation report creation ====")
-    html_fname = os.path.join(output_dir, VisualizerConfig.html_report)
-    html_report_writer.main(cdr_details, shm_details, plot_dir, html_fname, output_log)
+    output_config.Log().info("\n==== Annotation report creation ====")
+    html_report_writer.main(cdr_details, shm_details, output_config)
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:

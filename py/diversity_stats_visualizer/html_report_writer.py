@@ -72,6 +72,11 @@ class HTMLReportWriter:
     def CloseFile(self):
         self.fhandler.close()
 
+    def WriteImageWithTitle(self, fname, title, output_config):
+        if os.path.exists(fname):
+            self.WriteH2(title)
+            self.WriteImage(output_config.GetFnameForHTML(fname), width=60)    
+
 #######################################################################################################################
 def ComputeLocusCharacteristics(vj_df, locus):
     stats = []
@@ -94,13 +99,13 @@ def ComputeGeneralCharacteristicsTable(vj_df):
             table[j][i] = locus_stats[j]
     return table, row_names, col_names
 
-def WriteGeneralCharacteristics(html_writer, vj_df, images_dict):
+def WriteGeneralCharacteristics(html_writer, vj_df, output_config):
     html_writer.WriteH1("General characteristics")
     table, row_names, col_names = ComputeGeneralCharacteristicsTable(vj_df)
     html_writer.WriteTable(col_names, row_names, table)
-    if "vj_heatmap" in images_dict:
-        html_writer.WriteH2("Heatmap of VJ hit concentrations")
-        html_writer.WriteImage(images_dict["vj_heatmap"], width=60)
+    html_writer.WriteImageWithTitle(output_config.vj_usage + '.svg', "Heatmap of VJ hit concentrations", output_config)
+    html_writer.WriteImageWithTitle(output_config.v_usage + '.svg', "V usages", output_config)
+    html_writer.WriteImageWithTitle(output_config.j_usage + '.svg', "J usages", output_config)
 
 #######################################################################################################################
 def ComputeGeneralSHMCharacteristics(shm_df):
@@ -131,34 +136,15 @@ def ComputeGeneralSHMCharacteristics(shm_df):
                 table[row_index_dict["# stop codon SHMs"]][index_j] += 1
     return row_names, col_names, table
 
-def WriteSHMCharacteristics(html_writer, shm_df, images_dict):
+def WriteSHMCharacteristics(html_writer, shm_df, output_config):
     html_writer.WriteH1("SHM characteristics")
     row_names, col_names, table = ComputeGeneralSHMCharacteristics(shm_df)
     html_writer.WriteTable(col_names, row_names, table)
-    if "aa_substitutions" in images_dict:
-        html_writer.WriteH2("Heatmap of amino acid substitutions:")
-        html_writer.WriteImage(images_dict["aa_substitutions"], width = 60)
-    if "nucl_substitutions" in images_dict:
-        html_writer.WriteH2("Heatmap of nucleotide substitutions:")
-        html_writer.WriteImage(images_dict["nucl_substitutions"], width = 40)
-    if "ighv_shms" in images_dict:
-        html_writer.WriteH2("Distribution of SHM in IGHV:")
-        html_writer.WriteImage(images_dict["ighv_shms"], width = 60)
-    if "igkv_shms" in images_dict:
-        html_writer.WriteH2("Distribution of SHM in IGKV:")
-        html_writer.WriteImage(images_dict["igkv_shms"], width = 60)
-    if "iglv_shms" in images_dict:
-        html_writer.WriteH2("Distribution of SHM in IGLV:")
-        html_writer.WriteImage(images_dict["iglv_shms"], width = 60)
-    #if "synonymous_shms" in images_dict:
-    #    html_writer.WriteH2("Distribution of synonymous SHM positions in V gene segment:")
-    #    html_writer.WriteImage(images_dict["synonymous_shms"], width = 60)
-    if "special_shms" in images_dict:
-        html_writer.WriteH2("Distribution of insertion/deletion V SHM positions in read:")
-        html_writer.WriteImage(images_dict["special_shms"], width = 70)
-    if "indel_lens" in images_dict:
-        html_writer.WriteH2("Distribution of lengths of insertion/deletion V SHMs:")
-        html_writer.WriteImage(images_dict["indel_lens"], width = 70)
+    html_writer.WriteImageWithTitle(output_config.aa_matrix + '.svg', "Heatmap of amino acid substitutions", output_config)
+    html_writer.WriteImageWithTitle(output_config.nucl_matrix + '.svg', "Heatmap of nucleotide substitutions", output_config)
+    for l, fname in output_config.NumSHMIter():
+        html_writer.WriteImageWithTitle(fname + '.svg', 'Distribution of SHM in ' + l + 'V', output_config)
+    html_writer.WriteImageWithTitle(output_config.indel_length + '.svg', 'Distribution of lengths of insertion/deletion V SHMs', output_config)
 
 #######################################################################################################################
 def ComputeLocusCDRCharacteristics(vj_df, locus):
@@ -241,89 +227,36 @@ def WriteCDRCharacteristics(html_writer, vj_df, images_dict):
     WriteCDRPlots(html_writer, vj_df, images_dict)
 
 #######################################################################################################################
-
-def create_html(output_html_fname, vj_df, shm_df, images_dict, log):
-    log.info("Annotation report will be written to " + output_html_fname)
-    log.info("Printing general characteristics of the repertoire")
-    html_writer = HTMLReportWriter(output_html_fname)
-    WriteGeneralCharacteristics(html_writer, vj_df, images_dict)
+def create_html(vj_df, shm_df, output_config):
+    output_config.Log().info("Annotation report will be written to " + output_config.html_report)
+    output_config.Log().info("Printing general characteristics of the repertoire")
+    html_writer = HTMLReportWriter(output_config.html_report)
+    WriteGeneralCharacteristics(html_writer, vj_df, output_config)
     html_writer.WriteHorizontalLine()
-    log.info("Printing SHM characteristics")
-    WriteSHMCharacteristics(html_writer, shm_df, images_dict)
+    output_config.Log().info("Printing SHM characteristics")
+    WriteSHMCharacteristics(html_writer, shm_df, output_config)
     html_writer.WriteHorizontalLine()
-    log.info("Printing CDR characteristics")
-    WriteCDRCharacteristics(html_writer, vj_df, images_dict)
+    output_config.Log().info("Printing CDR characteristics")
+#    WriteCDRCharacteristics(html_writer, vj_df, images_dict)
     html_writer.CloseFile()
-    log.info("Annotation report was written to " + output_html_fname)
+    output_config.Log().info("Annotation report was written to " + output_config.html_report)
 
 #######################################################################################################################
-def add_cdr_plots(image_dict, plots_dir, rel_plot_dir):
-    inner_plots_dir = os.path.join(rel_plot_dir, "cdr_plots")
-    cdr_dict = os.path.join(plots_dir, "cdr_plots")
-    if not os.path.exists(cdr_dict):
-        return
-    loci = ['IGH', 'IGK', 'IGL']
-    cdrs = ['CDR1', 'CDR2', 'CDR3']
-    for l in loci:
-        for cdr in cdrs:
-            file_dict = {l + "_" + cdr + "_length" : l + "_" + cdr + "_length.svg",
-                         l + "_" + cdr + "_nucls" : l + "_" + cdr + "_nucls.svg",
-                         l + "_" + cdr + "_aa" : l + "_" + cdr + "_aa.svg"}
-            for f in file_dict:
-                if os.path.exists(os.path.join(cdr_dict, file_dict[f])):
-                    image_dict[f] = os.path.join(inner_plots_dir, file_dict[f])
-
-def add_shm_plots(image_dict, plots_dir, rel_plot_dir):
-    if os.path.exists(os.path.join(plots_dir, "aa_substitutions.svg")):
-        image_dict["aa_substitutions"] = os.path.join(rel_plot_dir, "aa_substitutions.svg")
-    if os.path.exists(os.path.join(plots_dir, "nucl_substitutions.svg")):
-        image_dict["nucl_substitutions"] = os.path.join(rel_plot_dir, "nucl_substitutions.svg")
-    if os.path.exists(os.path.join(plots_dir, "mutations_distribution_IGHV.svg")):
-        image_dict["ighv_shms"] = os.path.join(rel_plot_dir, "mutations_distribution_IGHV.svg")
-    if os.path.exists(os.path.join(plots_dir, "mutations_distribution_IGKV.svg")):
-        image_dict["igkv_shms"] = os.path.join(rel_plot_dir, "mutations_distribution_IGKV.svg")
-    if os.path.exists(os.path.join(plots_dir, "mutations_distribution_IGLV.svg")):
-        image_dict["iglv_shms"] = os.path.join(rel_plot_dir, "mutations_distribution_IGLV.svg")
-    if os.path.exists(os.path.join(plots_dir, "synonymous_shms_positions.svg")):
-        image_dict["synonymous_shms"] = os.path.join(rel_plot_dir, "synonymous_shms_positions.svg")
-    if os.path.exists(os.path.join(plots_dir, "special_shms_positions.svg")):
-        image_dict["special_shms"] = os.path.join(rel_plot_dir, "special_shms_positions.svg")
-    if os.path.exists(os.path.join(plots_dir, "indel_shms_length.svg")):
-        image_dict["indel_lens"] = os.path.join(rel_plot_dir, "indel_shms_length.svg")
-
-
-def create_image_dict(plots_dir):
-    rel_plots_dir = os.path.basename(os.path.normpath(plots_dir))
-    image_dict = dict()
-    if os.path.exists(os.path.join(plots_dir, "vj_heatmap.svg")):
-        image_dict["vj_heatmap"] = os.path.join(rel_plots_dir, "vj_heatmap.svg")
-    add_cdr_plots(image_dict, plots_dir, rel_plots_dir)
-    add_shm_plots(image_dict, plots_dir, rel_plots_dir)
-    return image_dict
-
-#######################################################################################################################
-
-def main(vj_df_fname, shm_df_fname, plots_dir, output_html_fname, log):
+def main(vj_df_fname, shm_df_fname, output_config):
     if not os.path.exists(vj_df_fname):
-        log.info("CDR details file " + vj_df_fname + " was not found")
+        output_config.Log().info("CDR details file " + vj_df_fname + " was not found")
         sys.exit(1)
     vj_df = pd.read_table(vj_df_fname, delim_whitespace = True)
     if not os.path.exists(shm_df_fname):
-        log.info("SHM details file " + shm_df_fname + " was not found")
+        output_config().Log().info("SHM details file " + shm_df_fname + " was not found")
         sys.exit(1)
     shm_df = visualize_shm_stats.SHMs(shm_df_fname)
-    if not os.path.exists(plots_dir):
-        log.info("Plot directory " + plots_dir + " does not exist")
-        sys.exit(1)
-    image_dict = create_image_dict(plots_dir)
-    create_html(output_html_fname, vj_df, shm_df, image_dict, log)
+    create_html(vj_df, shm_df, output_config)
 
 if __name__ == "__main__":
     warnings.filterwarnings('ignore')
-    if len(sys.argv) != 6:
+    if len(sys.argv) != 4:
         print "Invalid input"
-        print "python html_report_writer.py cdr_details.txt shm_details.txt plots_dir output.html logger"
+        print "python html_report_writer.py cdr_details.txt shm_details.txt output_config"
         sys.exit(1)
-    log = utils.get_logger_by_arg(sys.argv[5], "annotation_report")
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], log)
-
+    main(sys.argv[1], sys.argv[2], sys.argv[3])

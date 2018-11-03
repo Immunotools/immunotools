@@ -47,4 +47,7 @@ def CheckPackageFatal(package_name, log):
         found = False
     if not found:
         log.info("ERROR: package " + package_name + ' is not installed. Please look manual for installation details')
-        sys.exit(1) 
+        sys.exit(1)
+
+def GetBaseName(gene_name):
+    return gene_name.split('*')[0] 
