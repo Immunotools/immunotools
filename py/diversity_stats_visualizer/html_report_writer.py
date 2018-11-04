@@ -69,12 +69,18 @@ class HTMLReportWriter:
     def WriteHorizontalLine(self, width = 100):
         self.fhandler.write("<hr width=" + str(width) + "%>\n")
 
+    def WriteParagraph(self, text, alignment = "justify"):
+        self.fhandler.write("<p align = \"" + alignment + "\">\n")
+        self.fhandler.write(text + '\n')
+        self.fhandler.write('</p>\n')
+
     def CloseFile(self):
         self.fhandler.close()
 
     def WriteImageWithTitle(self, fname, title, output_config):
         if os.path.exists(fname):
-            self.WriteH2(title)
+            if title != '':
+                self.WriteH2(title)
             self.WriteImage(output_config.GetFnameForHTML(fname), width=60)    
 
 #######################################################################################################################
@@ -108,7 +114,7 @@ def WriteGeneralCharacteristics(html_writer, vj_df, output_config):
     html_writer.WriteImageWithTitle(output_config.j_usage + '.svg', "J usages", output_config)
 
 #######################################################################################################################
-def ComputeGeneralSHMCharacteristics(shm_df):
+def ComputeGeneralSHMCharacteristics(shm_df, output_config):
     col_names = ['V segment', 'J segment']
     row_names = ['# SHMs', '# substitutions', '# deletions', '# insertions', '# synonymous SHMs', '# stop codon SHMs']
     row_index_dict = dict()
@@ -134,18 +140,28 @@ def ComputeGeneralSHMCharacteristics(shm_df):
                 table[row_index_dict["# synonymous SHMs"]][index_j] += 1
             if shm.to_stop_codon:
                 table[row_index_dict["# stop codon SHMs"]][index_j] += 1
+    row_names.append("Individual SHM plots")
+    table.append(["<a href = " + os.path.basename(output_config.v_shms_html) + '>Link</a>', "<a href = " + os.path.basename(output_config.j_shms_html) + '>Link</a>'])
     return row_names, col_names, table
+
+def AddLinkToSHMsPerGene(html_writer, output_config):
+    v_paragraph = "<a href = " + output_config.v_shms_html + ">SHM plots of individual V genes</a>"
+    html_writer.WriteParagraph(v_paragraph, "center")
+    j_paragraph = "<a href = " + output_config.j_shms_html + ">SHM plots of individual J genes</a>"
+    html_writer.WriteParagraph(j_paragraph, "center")
 
 def WriteSHMCharacteristics(html_writer, shm_df, output_config):
     html_writer.WriteH1("SHM characteristics")
-    row_names, col_names, table = ComputeGeneralSHMCharacteristics(shm_df)
+    row_names, col_names, table = ComputeGeneralSHMCharacteristics(shm_df, output_config)
     html_writer.WriteTable(col_names, row_names, table)
-    html_writer.WriteImageWithTitle(output_config.aa_matrix + '.svg', "Heatmap of amino acid substitutions", output_config)
-    html_writer.WriteImageWithTitle(output_config.nucl_matrix + '.svg', "Heatmap of nucleotide substitutions", output_config)
     for l, fname in output_config.NumSHMIter():
         html_writer.WriteImageWithTitle(fname + '.svg', 'Distribution of SHM in ' + l + 'V', output_config)
+    html_writer.WriteImageWithTitle(output_config.v_mutability + '.svg', 'Mutability of V genes', output_config)
+    html_writer.WriteImageWithTitle(output_config.j_mutability + '.svg', 'Mutability of J genes', output_config)
     html_writer.WriteImageWithTitle(output_config.indel_length + '.svg', 'Distribution of lengths of insertion/deletion V SHMs', output_config)
-
+    html_writer.WriteImageWithTitle(output_config.synonymous_shms + '.svg', 'Fractions of synonymous SHMs in V and J genes', output_config)
+    html_writer.WriteImageWithTitle(output_config.aa_matrix + '.svg', "Heatmap of amino acid substitutions", output_config)
+    html_writer.WriteImageWithTitle(output_config.nucl_matrix + '.svg', "Heatmap of nucleotide substitutions", output_config)
 #######################################################################################################################
 def ComputeLocusCDRCharacteristics(vj_df, locus):
     locus_df = vj_df.loc[vj_df['Chain_type'] == locus]
@@ -215,6 +231,13 @@ def WriteCDRCharacteristics(html_writer, vj_df, output_config):
     WriteCDRPlots(html_writer, vj_df, output_config)
 
 #######################################################################################################################
+def output_segment_shms(html_fname, segment_type, output_config):
+    html_writer = HTMLReportWriter(html_fname)
+    for fname in output_config.GetSHMFilesBySegment(segment_type):
+        html_writer.WriteImageWithTitle(fname + '.svg', '', output_config)
+    html_writer.CloseFile()
+    output_config.Log().info('SHMs in individual ' + segment_type + ' genes were collected in ' + html_fname)
+
 def create_html(vj_df, shm_df, output_config):
     output_config.Log().info("Annotation report will be written to " + output_config.html_report)
     output_config.Log().info("Printing general characteristics of the repertoire")
@@ -222,6 +245,8 @@ def create_html(vj_df, shm_df, output_config):
     WriteGeneralCharacteristics(html_writer, vj_df, output_config)
     html_writer.WriteHorizontalLine()
     output_config.Log().info("Printing SHM characteristics")
+    output_segment_shms(output_config.v_shms_html, 'V', output_config)
+    output_segment_shms(output_config.j_shms_html, 'J', output_config)
     WriteSHMCharacteristics(html_writer, shm_df, output_config)
     html_writer.WriteHorizontalLine()
     output_config.Log().info("Printing CDR characteristics")

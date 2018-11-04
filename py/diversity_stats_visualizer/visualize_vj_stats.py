@@ -76,7 +76,7 @@ class VJMatrix:
         perc_list = [float(self.v_dict[v]) / len(self.vj_df) * 100 for v in self.sorted_vs]
         plt.bar(range(len(self.sorted_vs)), perc_list)
         plt.xticks(range(len(self.sorted_vs)), self.sorted_vs, rotation = 90, fontsize = 10)
-        plt.ylabel('% of sequences')
+        plt.ylabel('% of sequences', fontsize = 14)
         utils.output_figure(output_fname, "Usage of V genes", log)
 
     def OutputJUsage(self, output_fname, log):
@@ -84,7 +84,7 @@ class VJMatrix:
         perc_list = [float(self.j_dict[j]) / len(self.vj_df) * 100 for j in self.sorted_js]
         plt.bar(range(len(self.sorted_js)), perc_list)
         plt.xticks(range(len(self.sorted_js)), self.sorted_js, rotation = 90, fontsize = 10)
-        plt.ylabel('% of sequences')
+        plt.ylabel('% of sequences', fontsize = 14)
         utils.output_figure(output_fname, "Usage of J genes", log)
 
 def visualize_vj_stats(labeling_df, output_config):

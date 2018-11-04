@@ -105,14 +105,14 @@ def OutputGeneSHMPlot(gene_shms, gene_name, gene_length, num_aligned_seqs, outpu
             nucl_dict[nucl][i] = float(nucl_dict[nucl][i]) / num_aligned_seqs
     x = range(gene_length)
     plt.figure()
-    plt.bar(x, [sum(y) for y in zip(nucl_dict['A'], nucl_dict['C'], nucl_dict['G'], nucl_dict['T'])], color = 'b', label = 'A')
-    plt.bar(x, [sum(y) for y in zip(nucl_dict['A'], nucl_dict['C'], nucl_dict['G'])], color = 'g', label = 'C')
-    plt.bar(x, [sum(y) for y in zip(nucl_dict['A'], nucl_dict['C'])], color = 'r', label = 'G')
+    plt.bar(x, [sum(y) for y in zip(nucl_dict['A'], nucl_dict['C'], nucl_dict['G'], nucl_dict['T'])], color = 'blue', label = 'A')
+    plt.bar(x, [sum(y) for y in zip(nucl_dict['A'], nucl_dict['C'], nucl_dict['G'])], color = 'green', label = 'C')
+    plt.bar(x, [sum(y) for y in zip(nucl_dict['A'], nucl_dict['C'])], color = 'red', label = 'G')
     plt.bar(x, nucl_dict['T'], color = 'orange', label = 'T')
     plt.legend(loc = 'upper center', ncol = 4)
     plt.ylim(0, 1.1)
-    plt.xlabel('Position')
-    plt.ylabel('Fraction of sequences')
+    plt.xlabel('Position in V gene', fontsize = 14)
+    plt.ylabel('Fraction of sequences', fontsize = 14)
     plt.title(str(num_aligned_seqs) + ' sequences were aligned to ' + gene_name)
     utils.output_figure(output_fname, "SHM position in " + gene_name, log)
 
@@ -142,14 +142,41 @@ def OutputSHMsForVGenes(shm_df, output_config):
             OutputGeneSHMPlot(segment_dict[gene_name], gene_name, gene_len[gene_name], num_aligned[gene_name], output_fname, output_config.Log())
             output_config.AddSHMFileForSegment(segment, output_fname)
 
+def OutputGeneMutability(gene_mutability_dict, output_fname, gene_type, log):
+    df_dict = {'Gene' : [], 'Mutability' : []}
+    for gene in gene_mutability_dict:
+        for m in gene_mutability_dict[gene]:
+            df_dict['Gene'].append(gene)
+            df_dict['Mutability'].append(m)
+    plt.figure(figsize = (10, 8))
+    sns.boxplot(x = 'Gene', y = 'Mutability', data = df_dict)
+    plt.xticks(rotation = 90)
+    utils.output_figure(output_fname, "Mutability of " + gene_type + ' genes', log)
+
+def OutputVJGenesMutability(shm_df, output_config):
+    v_gene_mutability = dict()
+    j_gene_mutability = dict()
+    for it in shm_df:
+        cur_dict = v_gene_mutability
+        if not it.is_variable():
+            cur_dict = j_gene_mutability
+        gene_name = utils.GetBaseName(it.gene_name)
+        if gene_name not in cur_dict:
+            cur_dict[gene_name] = []
+        mutability = float(len(shm_df[it])) / it.gene_len
+        cur_dict[gene_name].append(mutability)
+    OutputGeneMutability(v_gene_mutability, output_config.v_mutability, 'V', output_config.Log())
+    OutputGeneMutability(j_gene_mutability, output_config.j_mutability, 'J', output_config.Log())
+
 ############################### NUMBER of SHMs per ISOTYPE #################################################
 def output_shm_stats_for_isotype(num_shms, locus, output_fname, log):
+    plt.figure()
     plt.hist(num_shms, color = isotype_colors[locus], bins = 50, alpha = .75)
     plt.xlabel("# SHMs in " + locus + "V", fontsize = 16)
     plt.ylabel("# sequences", fontsize = 16)
     plt.xticks(fontsize = 14)
     plt.yticks(fontsize = 14)
-    plt.title('# SHMs in ' + locus + 'V' + ' sequences')
+    plt.title('# SHMs in ' + locus + 'V' + ' sequences', fontsize = 14)
     utils.output_figure(output_fname, "Distribution of # SHMs in " + locus + "V segments", log)
 
 def ComputeNumSHMsInLoci(shm_df):
@@ -255,6 +282,14 @@ def visualize_nucl_substitution_matrix(shms_df, output_fname, log):
     plt.ylabel("From", fontsize = 14, rotation='horizontal')
     utils.output_figure(output_fname, "Nucleotide substitution heatmap", log)
 
+def output_aa_freq(aa_freq, output_fname, log):
+    aa_list = get_aa_list()
+    fhandler = open(output_fname, "w")
+    fhandler.write("from/to\t" + "\t".join(aa_list) + "\n")
+    for i in range(0, len(aa_list)):
+        fhandler.write(aa_list[i] + "\t" + "\t".join([str(ff) for ff in aa_freq[i]]) + "\n")
+    log.info("Amino acid substitution matrix was written to " + output_fname)
+
 #################################### SPECIAL SHMs ###################################################
 def output_synonymous_shms(synonymous_pos, output_fname, log):
     if len(synonymous_pos) < 100:
@@ -323,13 +358,27 @@ def visualize_indel_shm_lengths(shm_df, output_fname, log):
     plt.yticks(fontsize = 14)
     utils.output_figure(output_fname, "Distribution of insertion/deletion SHM lengths", log)
 
-def output_aa_freq(aa_freq, output_fname, log):
-    aa_list = get_aa_list()
-    fhandler = open(output_fname, "w")
-    fhandler.write("from/to\t" + "\t".join(aa_list) + "\n")
-    for i in range(0, len(aa_list)):
-        fhandler.write(aa_list[i] + "\t" + "\t".join([str(ff) for ff in aa_freq[i]]) + "\n")
-    log.info("Amino acid substitution matrix was written to " + output_fname)
+def OutputFractionOfSynonymousSHMs(shm_df, output_fname, log):
+    v_shm_fractions = []
+    j_shm_fractions = []
+    for it in shm_df:
+        read_shms = shm_df[it]
+        num_synonymous = 0
+        for shm in read_shms:
+            if shm.synonymous:
+                num_synonymous += 1
+        fraction = 0
+        if len(read_shms) != 0:
+            fraction = float(num_synonymous) / len(read_shms)
+        if it.is_variable():
+            v_shm_fractions.append(fraction)
+        else:
+            j_shm_fractions.append(fraction)
+    plt.hist([v_shm_fractions, j_shm_fractions], label = ['V gene', 'J gene'])
+    plt.xlabel('Fraction of synonymous SHMs', fontsize = 14)
+    plt.ylabel('# sequences', fontsize = 14)
+    plt.legend(loc = 'upper right', fontsize = 14)
+    utils.output_figure(output_fname, "Fractions of synonymous SHMs in V and J genes", log)
 
 #################################### MAIN ###################################################
 def main(shm_df_fname, output_config):
@@ -340,10 +389,12 @@ def main(shm_df_fname, output_config):
         return
     visualize_v_mutations_stats(shm_df, output_config)
     OutputSHMsForVGenes(shm_df, output_config)
+    OutputVJGenesMutability(shm_df, output_config)
     aa_freq = visualize_aa_substitution_matrix(shm_df, output_config.aa_matrix, output_config.Log())
 #    output_aa_freq(aa_freq, os.path.join(output_dir, "aa_substitution_matrix.txt"), log)
     visualize_nucl_substitution_matrix(shm_df, output_config.nucl_matrix, output_config.Log())
     visualize_indel_shm_lengths(shm_df, output_config.indel_length, output_config.Log())
+    OutputFractionOfSynonymousSHMs(shm_df, output_config.synonymous_shms, output_config.Log())
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:

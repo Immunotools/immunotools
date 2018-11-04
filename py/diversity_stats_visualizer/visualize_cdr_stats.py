@@ -18,13 +18,10 @@ from Bio.Seq import Seq
 def visualize_region_lengths(labeling_df, region, region_name, output_fname, log):
     region_seq = list(labeling_df[region])
     region_len = [len(s) for s in region_seq if len(s) > 1]
-    f, ax = plt.subplots(figsize=(8, 8))
+    plt.figure()
     sns.distplot(region_len, kde = False, rug=False)
-    plt.xlabel(region_name + ' length', fontsize = 16)
-    plt.ylabel('# ' + region_name + 's', fontsize = 16)
-    plt.xticks(fontsize = 14)
-    plt.yticks(fontsize = 14)
-    plt.xlim(0, 100)
+    plt.xlabel(region_name + ' length (nt)', fontsize = 14)
+    plt.ylabel('# ' + region_name + 's', fontsize = 14)
     utils.output_figure(output_fname, region_name + " length distribution", log)
 
 ############################################################################
@@ -56,7 +53,6 @@ def visualize_length_abundance_dist(labeling_df, region, region_name, output_fna
     utils.output_figure(output_fname, region_name + " joint distribution of abundances & lengths", log)
 
 ############################################################################
-
 def get_region_largest_group(region_seq):
     len_dict = dict()
     for s in region_seq:
@@ -112,15 +108,15 @@ def visualize_largest_region_nucls(labeling_df, region, region_name, output_fnam
     sns.barplot(x=x, y=cgt, label="C", color = 'g')
     sns.barplot(x=x, y=gt, label="G", color = 'r')
     sns.barplot(x=x, y=nucl_dict['T'], label="T", color = 'orange')
+    plt.ylim(0, 115)
     ax.legend(ncol = 4, loc="upper center", frameon=True, fontsize = 16)
-    plt.xlabel(region_name + ' position', fontsize = 16)
+    plt.xlabel(region_name + ' position (nt)', fontsize = 16)
     plt.ylabel('Nucleotide %', fontsize = 16)
     plt.xticks(x, x_l, fontsize = 14)
     plt.yticks(fontsize = 14)
     utils.output_figure(output_fname, region_name + " nucleotide distribution", log)
 
 ############################################################################
-
 amino_acids = ['A', 'G', 'L', 'R', 'W', 'N', 'V', 'I', 'P', 'F', 'Y', 'C', 'T', 'S', 'M', 'Q', 'K', 'H', 'D', 'E', '*']
 
 def get_aa_colors():
@@ -140,14 +136,19 @@ def visualize_largest_group_aa_variability(labeling_df, region, region_name, out
     if group_len % 3 != 0:
         print "Largest " + region_name + " is not out-of-frame"
         return
+    aa_len = group_len / 3 
     aa_seqs = [Seq(cdr).translate(to_stop=True) for cdr in max_group]
-    aa_matrix = []
+    aa_dict = {'Position' : [], 'Hidrophobicity' : []}
     for aa_seq in aa_seqs:
         aa_row = [utils.hydrophoby_dict[aa] for aa in aa_seq]
-        aa_matrix.append(aa_row)
+        for i in range(len(aa_row)):
+            aa_dict['Position'].append(i + 1)
+            aa_dict['Hidrophobicity'].append(aa_row[i])
     plt.figure()
-    sns.clustermap(aa_matrix, vmin = min(utils.hydrophoby_dict.values()), vmax = max(utils.hydrophoby_dict.values()), cmap = 'coolwarm', col_cluster = False)
-    plt.xlabel('Amino acid position', fontsize = 16)
+    sns.barplot(x = 'Position', y = 'Hidrophobicity', data = aa_dict, order = range(1, aa_len + 1), color = 'blue')
+    plt.xlabel('Position (aa)', fontsize = 14)
+    plt.ylabel('Hidrophobicity', fontsize = 14)
+    plt.ylim(min(utils.hydrophoby_dict.values()) - 10, max(utils.hydrophoby_dict.values()) + 10)
     utils.output_figure(output_fname, region_name + " aa variability", log)
 
 def output_cdr_stats_for_locus(locus_df, locus_name, column_name, region_name, output_dir, log):

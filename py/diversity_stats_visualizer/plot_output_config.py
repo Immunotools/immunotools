@@ -21,8 +21,13 @@ class PlotConfig:
     aa_matrix = 'aa_substitutions'
     num_v_shm_prefix = 'mutations_distribution'
     indel_length = 'indel_shms_length'
+    synonymous_shms = 'synonymous_shm_fractions'
     v_shm_dir = 'v_gene_shms'
     j_shm_dir = 'j_gene_shms'
+    v_mutability = 'v_mutability'
+    j_mutability = 'j_mutability'
+    v_shms_html = 'shms_per_v_gene.html'
+    j_shms_html = 'shms_per_j_gene.html'
     # HTML report
     html_report = 'annotation_report.html'
 
@@ -58,6 +63,7 @@ class OutputConfig:
         for l in PlotConfig.ig_loci:
             self.num_shm_dict[l] = os.path.join(self.shm_dir, PlotConfig.num_v_shm_prefix + '_' + l + 'V')
         self.indel_length = os.path.join(self.shm_dir, PlotConfig.indel_length)
+        self.synonymous_shms = os.path.join(self.shm_dir, PlotConfig.synonymous_shms)
         self.gene_segment_dirs = dict()
         self.gene_segment_files = dict()
         for segment in PlotConfig.gene_segments:
@@ -65,6 +71,10 @@ class OutputConfig:
             os.mkdir(segment_dir)
             self.gene_segment_dirs[segment] = segment_dir
             self.gene_segment_files[segment] = []
+        self.v_mutability = os.path.join(self.shm_dir, PlotConfig.v_mutability)
+        self.j_mutability = os.path.join(self.shm_dir, PlotConfig.j_mutability)
+        self.v_shms_html = os.path.join(self.output_dir, PlotConfig.v_shms_html)
+        self.j_shms_html = os.path.join(self.output_dir, PlotConfig.j_shms_html)
 
     def _InitHTMLFnames(self):
         self.html_report = os.path.join(self.output_dir, PlotConfig.html_report)
@@ -81,6 +91,9 @@ class OutputConfig:
 
     def GetSHMDirBySegment(self, segment):
         return self.gene_segment_dirs[segment]
+
+    def GetSHMFilesBySegment(self, segment):
+        return self.gene_segment_files[segment]
 
     def AddSHMFileForSegment(self, segment, fname):
         self.gene_segment_files[segment].append(fname)

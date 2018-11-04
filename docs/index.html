@@ -72,12 +72,30 @@
     <!------------------------------------------------------------------------>
     <h3 id = "vj_labeling_output">2. VJ labeling output</h3>
     <p align = "justify">
-        Diversity Analyzer launches VJ Finder (ultra-fast aligner of Rep-seq reads) for finding V and J hits of input sequences.
-        Based on computed VJ labeling, DiversityAnalyzer reports heatmap showing VJ usage:<br></p>
+        Diversity Analyzer launches VJ Finder (fast and accurate aligner of Rep-seq reads) for finding V and J hits of input sequences.
+        Based on computed VJ labeling, DiversityAnalyzer reports heatmap showing VJ usage:
+    </p>
 
     <p align="center">
         <a href = "divan_docs/vj_heatmap.png">
             <img src = divan_docs/vj_heatmap.png width  = 30%><br>
+            Click for preview
+        </a>
+    </p>
+ 
+    <p align = "justify">
+        DiversityAnalyzer also computes usages of V and J genes in input receptor sequences. 
+        Note that allelic variations are collapsed for usage computation.
+        E.g., both IGHV1-18*01 and IGHV1-18*02 will contribute into usage of IGHV1-18.
+    </p>    
+
+    <p align="center">
+        <a href = "divan_docs/v_usage.png">
+            <img src = divan_docs/v_usage.png width = 60%><br>
+            Click for preview
+        </a><br>
+        <a href = "divan_docs/j_usage.png">
+            <img src = divan_docs/j_usage.png width = 60%><br>
             Click for preview
         </a>
     </p>
@@ -105,9 +123,8 @@
     <!------------------------------------------------------------------------>
     <h3 id = "cdr_labeling_output">3. CDR labeling output</h3>
     <p align = "justify">
-        Diversity Analyzer aligns input sequences against V and J segments from the IMGT database with known positions of CDRs
-        (positions are consistent with <a href = "">IgBlast</a>).
-        Using alignment, positions of germline CDRs are converted into positions of input full-length sequences:
+        Diversity Analyzer aligns input sequences against V and J segments from the IMGT database with known positions of CDRs.
+        Using alignment, positions of germline CDRs are converted into positions of receptor sequences:
         
         <img src="divan_docs/cdr_computation.png" alt = "cdr_computation">
 
@@ -198,8 +215,8 @@
 
     <h4>4.1 SHM plots</h4>
     <p align = justify>
-        If a chain presented by at least 100 sequences,
-        Diversity Analyzer reports plots for SHMs lying in V segments of sequences of this chain type:
+        If a chain presented in input sequences,
+        Diversity Analyzer reports plots for SHMs lying in V segments of sequences of this chain:
     </p>
 
     <table>
@@ -231,36 +248,18 @@
     </table>
 
     <p>
-        Diversity Analyzer also reports statistics of special SHMs lying in V segments:
+        Diversity Analyzer reports characteristics of special SHMs (indels, synonymous) lying in V segments:
     </p>
     <table>
         <tr align = center>
             <td>
-                <b>Distribution of indel SHMs positions</b>
-            </td>
-            <td>
                 <b>Distribution of indel SHMs lengths</b>
-            </td>
-            <td>
-                <b>Distribution of synonymous SHMs positions</b>
             </td>
         </tr>
         <tr align = center>
             <td>
-                <a href = "divan_docs/special_shms_positions.png">
-                    <img src="divan_docs/special_shms_positions.png" width="70%"><br>
-                    Click for preview
-                </a>
-            </td>
-            <td>
                 <a href = "divan_docs/indel_shms_length.png">
-                    <img sr="divan_docs/indel_shms_length.png" width="70%"><br>
-                    Click for preview
-                </a>
-            </td>
-            <td>
-                <a href = "divan_docs/synonymous_shms_positions.png">
-                    <img src="divan_docs/synonymous_shms_positions.png" width="200%"><br>
+                    <img src="divan_docs/indel_shms_length.png" width="70%"><br>
                     Click for preview
                 </a>
             </td>
@@ -377,7 +376,8 @@
     </p>
 
     <p align = "justify">
-       If you have any questions or troubles with running DiversityAnalyzer, please contact <a href = "mailto:safonova.yana@gmail.com">Yana Safonova</a>. We also will be happy to hear your suggestions about improvement of our tools!
+       If you have any questions or troubles with running DiversityAnalyzer, please contact <a href = "mailto:safonova.yana@gmail.com">Yana Safonova</a>. 
+        We also will be happy to hear your suggestions about improvement of our tools!
     </p>
 
     <hr>

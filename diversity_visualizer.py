@@ -27,7 +27,7 @@ class VisualizerConfig:
     cdr_details = "cdr_details.txt"
     shm_details = "shm_details.txt"
     # output files
-    visualizer_dir = "visualization"
+    visualizer_dir = "visualizer"
     plot_dir = "plots"
     html_report = "annotation_report.html"
     # packages
@@ -40,10 +40,12 @@ def CheckInputDirFatal(input_dir):
         print "ERROR: " + input_dir + " is not a directory"
         sys.exit(1)
 
-def CreateOutputDir(divan_dir):
-    vis_dir = os.path.join(divan_dir, VisualizerConfig.visualizer_dir)
-    if not os.path.exists(vis_dir):
-        os.mkdir(vis_dir)
+def CreateOutputDir(divan_dir, vis_dir = ""):
+    if vis_dir == "":
+        vis_dir = os.path.join(divan_dir, VisualizerConfig.visualizer_dir)
+    if os.path.exists(vis_dir):
+        shutil.rmtree(vis_dir)
+    os.mkdir(vis_dir)
     return vis_dir
 
 def CreateLog(output_dir):
@@ -96,12 +98,15 @@ def main(input_dir, output_dir, output_log):
     html_report_writer.main(cdr_details, shm_details, output_config)
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
+    if len(sys.argv) not in [2, 3]:
         print "Invalid input arguments"
         print "python diversity_visualizer.py diversity_analyzer_dir"
         sys.exit(1)
     diversity_analyzer_dir = sys.argv[1]
+    output_dir = ""
+    if len(sys.argv) == 3:
+        output_dir = sys.argv[2]
     CheckInputDirFatal(diversity_analyzer_dir)
-    output_dir = CreateOutputDir(diversity_analyzer_dir)
+    output_dir = CreateOutputDir(diversity_analyzer_dir, output_dir)
     output_log = CreateLog(output_dir)
     main(diversity_analyzer_dir, output_dir, output_log)
