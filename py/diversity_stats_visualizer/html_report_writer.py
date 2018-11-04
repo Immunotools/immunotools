@@ -195,36 +195,24 @@ def ImageDictContainsLocus(image_dict, locus):
             return True
     return False
 
-def WriteCDRPlots(html_writer, vj_df, images_dict):
-    loci = ['IGH', 'IGK', 'IGL']
-    cdrs = ['CDR1', 'CDR2', 'CDR3']
-    for l in loci:
-        if not ImageDictContainsLocus(images_dict, l):
+def WriteCDRPlots(html_writer, vj_df, output_config):
+    for locus, cdr, file_list in output_config.CDRPlotIter():
+        file_list = [f + '.svg' for f in file_list]
+        html_writer.WriteImageWithTitle(file_list[0], locus + " " + cdr + " length distribution", output_config)
+        locus_df = vj_df.loc[vj_df['Chain_type'] == locus]
+        max_len, max_abun = GetLengthAbundanceLargestGroup(locus_df, locus, cdr)
+        html_writer.WriteH2("Most " + locus + " " + cdr + "s (" + str(max_abun) + "%) have length " + str(max_len) + " nt")
+        html_writer.WriteImageWithTitle(file_list[1], "Nucleotide content for " + locus + ' ' + cdr + 's with length ' + str(max_len) + ' nt', output_config)
+        if not os.path.exists(file_list[2]):
             continue
-        locus_df = vj_df.loc[vj_df['Chain_type'] == l]
-        for cdr in cdrs:
-            if l + "_" + cdr + "_length" in images_dict:
-                html_writer.WriteH2(l + " " + cdr + " length distribution:")
-                html_writer.WriteImage(images_dict[l + "_" + cdr + "_length"], 65)
-            else:
-                continue
-            max_len, max_abun = GetLengthAbundanceLargestGroup(locus_df, l, cdr)
-            if l + "_" + cdr + "_nucls" in images_dict:
-                html_writer.WriteH2("Most " + l + " " + cdr + "s (" + str(max_abun) + "%) have length " + str(max_len) + " nt")
-                html_writer.WriteH3("Distribution of nucleotide abundance per position for " + l + " " + cdr +
-                                    "s of length " + str(max_len) + " nt:")
-                html_writer.WriteImage(images_dict[l + "_" + cdr + "_nucls"], 70)
-                if l + "_" + cdr + "_aa" in images_dict:
-                    html_writer.WriteH3(l + " " + cdr + "s of length " + str(max_len) + " nt are in-frame. "
-                                                                                   "Plot of the most abundant amino "
-                                                                                   "acids per position:")
-                    html_writer.WriteImage(images_dict[l + "_" + cdr + "_aa"], 70)
+        html_writer.WriteH2(locus + " " + cdr + "s of length " + str(max_len) + " nt are in-frame")
+        html_writer.WriteImageWithTitle(file_list[2], "Amino acids of " + cdr + 's with length ' +  str(max_len / 3) + ' aa', output_config)
         html_writer.WriteHorizontalLine(70)
 
-def WriteCDRCharacteristics(html_writer, vj_df, images_dict):
+def WriteCDRCharacteristics(html_writer, vj_df, output_config):
     html_writer.WriteH1("CDR characteristics")
     WriteGeneralCDRCharacteristics(html_writer, vj_df)
-    WriteCDRPlots(html_writer, vj_df, images_dict)
+    WriteCDRPlots(html_writer, vj_df, output_config)
 
 #######################################################################################################################
 def create_html(vj_df, shm_df, output_config):
@@ -237,7 +225,7 @@ def create_html(vj_df, shm_df, output_config):
     WriteSHMCharacteristics(html_writer, shm_df, output_config)
     html_writer.WriteHorizontalLine()
     output_config.Log().info("Printing CDR characteristics")
-#    WriteCDRCharacteristics(html_writer, vj_df, images_dict)
+    WriteCDRCharacteristics(html_writer, vj_df, output_config)
     html_writer.CloseFile()
     output_config.Log().info("Annotation report was written to " + output_config.html_report)
 

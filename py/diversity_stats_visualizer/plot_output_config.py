@@ -89,3 +89,7 @@ class OutputConfig:
         splits = fname.split('/')
         vis_index = splits.index(os.path.basename(self.output_dir))
         return '/'.join(splits[vis_index + 1 : ])
+
+    def CDRPlotIter(self):
+        for p in sorted(self.cdr_plot_dict):
+            yield p[0], p[1], self.cdr_plot_dict[p]
