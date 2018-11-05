@@ -87,11 +87,29 @@ class VJMatrix:
         plt.ylabel('% of sequences', fontsize = 14)
         utils.output_figure(output_fname, "Usage of J genes", log)
 
+    def OutputVUsageToTxt(self, output_fname, log):
+        fh = open(output_fname, 'w')
+        fh.write('Gene_name\tMultiplicity\tFrequency\n')
+        for v in self.sorted_vs:
+            fh.write(v + '\t' + str(self.v_dict[v]) + '\t' + str(float(self.v_dict[v]) / len(self.vj_df)) + '\n')
+        log.info("Usage of V genes was written to " + output_fname)
+        fh.close()
+
+    def OutputJUsageToTxt(self, output_fname, log):
+        fh = open(output_fname, 'w')
+        fh.write('Gene_name\tMultiplicity\tFrequency\n')
+        for j in self.sorted_js:
+            fh.write(j + '\t' + str(self.j_dict[j]) + '\t' + str(float(self.j_dict[j]) / len(self.vj_df)) + '\n')  
+        log.info("Usage of J genes was written to " + output_fname)
+        fh.close()        
+
 def visualize_vj_stats(labeling_df, output_config):
     vj_matrix = VJMatrix(labeling_df)
     vj_matrix.OutputHeatmap(output_config.vj_usage, output_config.Log())
     vj_matrix.OutputVUsage(output_config.v_usage, output_config.Log())
+    vj_matrix.OutputVUsageToTxt(output_config.v_usage_txt, output_config.Log())
     vj_matrix.OutputJUsage(output_config.j_usage, output_config.Log())
+    vj_matrix.OutputJUsageToTxt(output_config.j_usage_txt, output_config.Log())
 
 ############################################################################
 def main(cdr_details, output_config):

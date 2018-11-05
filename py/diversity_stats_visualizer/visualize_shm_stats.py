@@ -102,19 +102,33 @@ def OutputGeneSHMPlot(gene_shms, gene_name, gene_length, num_aligned_seqs, outpu
         num_shms += 1
     for nucl in nucl_dict:
         for i in range(len(nucl_dict[nucl])):
-            nucl_dict[nucl][i] = float(nucl_dict[nucl][i]) / num_aligned_seqs
+            nucl_dict[nucl][i] = nucl_dict[nucl][i]
     x = range(gene_length)
     plt.figure()
-    plt.bar(x, [sum(y) for y in zip(nucl_dict['A'], nucl_dict['C'], nucl_dict['G'], nucl_dict['T'])], color = 'blue', label = 'A')
-    plt.bar(x, [sum(y) for y in zip(nucl_dict['A'], nucl_dict['C'], nucl_dict['G'])], color = 'green', label = 'C')
-    plt.bar(x, [sum(y) for y in zip(nucl_dict['A'], nucl_dict['C'])], color = 'red', label = 'G')
-    plt.bar(x, nucl_dict['T'], color = 'orange', label = 'T')
+    plt.bar(x, [float(sum(y)) / num_aligned_seqs for y in zip(nucl_dict['A'], nucl_dict['C'], nucl_dict['G'], nucl_dict['T'])], color = 'blue', label = 'A')
+    plt.bar(x, [float(sum(y)) / num_aligned_seqs for y in zip(nucl_dict['A'], nucl_dict['C'], nucl_dict['G'])], color = 'green', label = 'C')
+    plt.bar(x, [float(sum(y)) / num_aligned_seqs for y in zip(nucl_dict['A'], nucl_dict['C'])], color = 'red', label = 'G')
+    plt.bar(x, [float(m) / num_aligned_seqs for m in nucl_dict['T']], color = 'orange', label = 'T')
     plt.legend(loc = 'upper center', ncol = 4)
     plt.ylim(0, 1.1)
     plt.xlabel('Position in V gene', fontsize = 14)
     plt.ylabel('Fraction of sequences', fontsize = 14)
     plt.title(str(num_aligned_seqs) + ' sequences were aligned to ' + gene_name)
     utils.output_figure(output_fname, "SHM position in " + gene_name, log)
+    return nucl_dict
+
+def WriteNucleotide(fh, pos, nucl, nucl_mult, num_aligned_seq):
+    if nucl_mult == 0:
+        return
+    fh.write(str(pos) + '\t' + nucl + '\t' + str(nucl_mult) + '\t' + str(float(nucl_mult) / num_aligned_seq) + '\n')
+
+def OutputGeneSHMsToTxt(nucl_dict, num_aligned_seqs, output_fname):
+    fh = open(output_fname, 'w')
+    fh.write('Position\tNucleotide\tMultiplicity\tFrequency\n')
+    for i in range(len(nucl_dict['A'])):
+        for nucl in ['A', 'C', 'G', 'T']:
+            WriteNucleotide(fh, i, nucl, nucl_dict[nucl][i], num_aligned_seqs)
+    fh.close()
 
 def OutputSHMsForVGenes(shm_df, output_config):
     gene_type_dict = dict()
@@ -139,8 +153,9 @@ def OutputSHMsForVGenes(shm_df, output_config):
             if num_aligned_seq < 10:
                 continue
             output_fname = os.path.join(output_config.GetSHMDirBySegment(segment), gene_name)
-            OutputGeneSHMPlot(segment_dict[gene_name], gene_name, gene_len[gene_name], num_aligned[gene_name], output_fname, output_config.Log())
+            nucl_pos_dict = OutputGeneSHMPlot(segment_dict[gene_name], gene_name, gene_len[gene_name], num_aligned[gene_name], output_fname, output_config.Log())
             output_config.AddSHMFileForSegment(segment, output_fname)
+            OutputGeneSHMsToTxt(nucl_pos_dict, num_aligned[gene_name], os.path.join(output_config.GetSHMDirBySegment(segment), gene_name) + '.txt')
 
 def OutputGeneMutability(gene_mutability_dict, output_fname, gene_type, log):
     df_dict = {'Gene' : [], 'Mutability' : []}
@@ -150,6 +165,8 @@ def OutputGeneMutability(gene_mutability_dict, output_fname, gene_type, log):
             df_dict['Mutability'].append(m)
     plt.figure(figsize = (10, 8))
     sns.boxplot(x = 'Gene', y = 'Mutability', data = df_dict)
+    max_mutability = max(0.55, max(df_dict['Mutability']))
+    plt.ylim(0, max_mutability)
     plt.xticks(rotation = 90)
     utils.output_figure(output_fname, "Mutability of " + gene_type + ' genes', log)
 

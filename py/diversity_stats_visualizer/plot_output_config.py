@@ -11,6 +11,8 @@ class PlotConfig:
     v_usage = 'v_usage'
     j_usage = 'j_usage'
     vj_usage = 'vj_heatmap'
+    v_usage_txt = 'v_usage.txt'
+    j_usage_txt = 'j_usage.txt'
     # CDR plots
     cdrs_middles = ['CDR1', 'CDR2', 'CDR3']
     cdr_suffixes = ['length', 'nucls', 'aa']
@@ -48,6 +50,8 @@ class OutputConfig:
         self.v_usage = os.path.join(self.usage_dir, PlotConfig.v_usage)
         self.j_usage = os.path.join(self.usage_dir, PlotConfig.j_usage)
         self.vj_usage = os.path.join(self.usage_dir, PlotConfig.vj_usage)
+        self.v_usage_txt = os.path.join(self.usage_dir, PlotConfig.v_usage_txt)
+        self.j_usage_txt = os.path.join(self.usage_dir, PlotConfig.j_usage_txt)
 
     def _InitCDRFnames(self):
         self.cdr_plot_dir = os.path.join(self.plot_dir, PlotConfig.cdr_plot_dir)
