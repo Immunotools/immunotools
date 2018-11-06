@@ -166,8 +166,9 @@ def OutputGeneMutability(gene_mutability_dict, output_fname, gene_type, log):
     plt.figure(figsize = (10, 8))
     sns.boxplot(x = 'Gene', y = 'Mutability', data = df_dict)
     max_mutability = max(0.55, max(df_dict['Mutability']))
-    plt.ylim(0, max_mutability)
+    plt.ylim(-0.05, max_mutability)
     plt.xticks(rotation = 90)
+    plt.ylabel('Mutability')
     utils.output_figure(output_fname, "Mutability of " + gene_type + ' genes', log)
 
 def OutputVJGenesMutability(shm_df, output_config):

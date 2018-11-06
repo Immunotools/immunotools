@@ -19,7 +19,7 @@ def visualize_region_lengths(labeling_df, region, region_name, output_fname, log
     region_seq = list(labeling_df[region])
     region_len = [len(s) for s in region_seq if len(s) > 1]
     plt.figure()
-    sns.distplot(region_len, kde = False, rug=False)
+    plt.hist(region_len)
     plt.xlabel(region_name + ' length (nt)', fontsize = 14)
     plt.ylabel('# ' + region_name + 's', fontsize = 14)
     utils.output_figure(output_fname, region_name + " length distribution", log)
