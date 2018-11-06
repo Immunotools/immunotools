@@ -26,9 +26,54 @@
 
     <h3>Input</h3>
     <p align = "justify">
-        Diversity Analyzer takes full-length immune sequences in FASTA/FASTQ format as an input.
+        Diversity Analyzer takes full-length sequences of adaptive immune receptors as an input.
         Tool expects that input sequences cover entire variable regions of antibody or TCR: from the start of V segment to the end of J segment.
         Tool is able to process raw Rep-seq libraries, as well as constructed repertoires.
+    </p>
+
+    <h3>Usage</h3>
+    <p align = "justify">
+        To launch DiversityAnalyzer, type:</br>
+
+        <code>
+            ./diversity_analyzer.py -i INPUT_FILE -o OUTPUT_DIRECTORY -l LOCUS
+        </code>
+        </br>
+
+        <ul>
+            <li><b>INPUT_FILE:</b> input sequences of adaptive immune receptors in FASTA/FASTQ format;</li>
+            <li><b>OUTPUT_DIR:</b> output directory. Please note that DiversityAnalyzer checks the existance of OUTPUT_DIR, removes it if it exists, and creates an empty directory with name OUTPUT_DIR. So, we recommend not to specify an existing directory as OUTPUT_DIR!</li>
+            <li><b>LOCUS:</b> name of IG / TR locus that will be used for alignment. Possible values: ALL / IG / IGH / IGK / IGL / TR / TRA / TRB / TRG / TRD.
+        </ul>
+    </p>
+
+    <h3>Optional parameters</h3>
+    <p align = "justify">
+        <table border="0">
+            <col width="30%">
+            <col width="20%">
+            <col width="50%">
+        <tr>
+            <td><b>Description</b></td>
+            <td><b>Option</b></td>
+            <td><b>Values</b></td>
+        </tr>
+        <tr>
+            <td>Organism</td>
+            <td><code>--org</code></td>
+            <td>human / mouse / rat / rabbit / rhesus-monkey / cattle. Default value is human.</td>
+        </tr>
+        <tr>
+            <td>Number of parallel threads</td>
+            <td><code>-t / --threads</code></td>
+            <td>Default value is 16.</td>
+        </tr>
+        <tr>
+            <td>Skip visualization</td>
+            <td><code>--skip-plots</code></td>
+            <td>By default, DiversityVisualizer visualizes statistics of input sequences. Note that this step might be time-consuming for large input libraries.</td>
+        </tr>
+        </table>
     </p>
 
     <h3>Output</h3>
@@ -86,18 +131,53 @@
     <p align = "justify">
         DiversityAnalyzer also computes usages of V and J genes in input receptor sequences. 
         Note that allelic variations are collapsed for usage computation.
-        E.g., both IGHV1-18*01 and IGHV1-18*02 will contribute into usage of IGHV1-18.
+        E.g., both IGHV1-18*01 and IGHV1-18*02 will contribute to usage of IGHV1-18.
     </p>    
 
     <p align="center">
-        <a href = "divan_docs/v_usage.png">
-            <img src = divan_docs/v_usage.png width = 60%><br>
-            Click for preview
-        </a><br>
-        <a href = "divan_docs/j_usage.png">
-            <img src = divan_docs/j_usage.png width = 60%><br>
-            Click for preview
-        </a>
+        <table border="0">
+            <col width="50%">
+            <col width="50%">
+            <tr>
+                <td align = center>
+                    <a href = "divan_docs/v_usage.png">
+                    <img src = divan_docs/v_usage.png width = 100%><br>
+                    Click for preview</a>
+                </td>
+                <td align = center>
+                    <a href = "divan_docs/j_usage.png">
+                    <img src = divan_docs/j_usage.png width = 100%><br>
+                    Click for preview</a>
+                </td>
+            </tr>
+        </table>
+    </p>
+
+    <p align = center>
+        DiversityAnalyzer also reports computed V and J usages in TXT files:<br>
+
+        <table border = 0>
+            <col width="50%">
+            <col width="50%">
+            <tr>
+                <td align = justify>
+                    <code>
+                    Gene_name       Multiplicity    Frequency<br>
+                    IGHV3-11        1               0.00319<br>
+                    IGHV3-20        300             0.95847<br>
+                    IGHV3-21        5               0.01597<br>
+                    IGHV3-23        7               0.02236<br>
+                    </code>
+                </td>
+                <td>
+                    <ul>
+                        <li><b>Gene:</b> the name of germline V or J gene</li> 
+                        <li><b>Multiplicity:</b> the number of input sequences aligned to the germline gene;</li>
+                        <li><b>Frequency:</b> the fraction of input sequences aligned to the germline gene.</li>
+                    </ul>
+                </td>
+            </tr>
+        </table>
     </p>
 
     <h4 id = "v_alignments">2.1. V alignments</h4>
