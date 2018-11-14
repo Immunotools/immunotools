@@ -215,7 +215,7 @@ def main(argv):
 
     optional_args.add_argument('--skip-plots',
                                action='store_const',
-                               const=False,
+                               const=True,
                                dest = "skip_plots",
                                help = "Skip drawing plots")
 
@@ -254,6 +254,7 @@ def main(argv):
     log.info("Log will be written to " + params.log_filename + "\n")
 
     PrepareConfigs(params, log)
+    print params.skip_plots
     try:
         cdr_command_line = run_cdr_labeler + " " + params.cdr_labeler_config_file
         support.sys_call(cdr_command_line, log)
