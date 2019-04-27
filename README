@@ -1,4 +1,3 @@
-ImmunoTools
 ImmunoTools package includes the following tools:
 - DiversityAnalyzer: a tool for basic processing immunosequencing (Rep-seq) data: VDJ alignment, finding FRs / CDRs, and finding SHMs
 - IgScout: a tool for de novo inference of D (diversity genes) using Rep-seq data
