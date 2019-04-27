@@ -5,6 +5,7 @@ Current contributors:
 
     Yana Safonova,
     Andrey Bzikadze,
+    Vinnu Bhardwaj,
     Pavel A. Pevzner
 
 Also contributed:
@@ -19,6 +20,8 @@ Installation instructions and manual can be found on the website:
 https://immunotools.github.io/immunotools/
 
 References:
+
+- Yana Safonova and Pavel Pevzner. De novo inference of diversity genes and analysis of non-canonical V(DD)J recombination in immunoglobulins. Front. Immunol. | doi: 10.3389/fimmu.2019.00987
 
 - Alexander Shlemov, Sergey Bankevich, Andrey Bzikadze, Maria A Turchaninova, Yana Safonova, Pavel A Pevzner. Reconstructing Antibody Repertoires from Error-Prone Immunosequencing Reads. J Immunol. 2017 Nov 1;199(9):3369-3380.
 
