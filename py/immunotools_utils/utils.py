@@ -27,3 +27,6 @@ def CollapseIdenticalSequences(seqs):
         collapsed_seqs.append(s)
         added_seqs.add(s.seq)
     return collapsed_seqs
+
+def GetBaseGeneName(d_name):
+    return d_name.split('*')[0]

@@ -17,22 +17,10 @@ from matplotlib.backends.backend_pdf import PdfPages
 import seaborn as sns
 import numpy as np
 
-###################################################
-def PrepareOutputDir(output_dir):
-    if os.path.exists(output_dir):
-        shutil.rmtree(output_dir)
-    os.mkdir(output_dir)
-
-def ReadFasta(fasta_fname):
-    records = []
-    for r in SeqIO.parse(fasta_fname, 'fasta'):
-        r.seq = str(r.seq).upper()
-        records.append(r)
-    print str(len(records)) + ' records were extracted from ' + fasta_fname
-    return records
-
-def GetBaseGeneName(d_name):
-    return d_name.split('*')[0]
+script_dir = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(script_dir, 'py/igscout_utils'))
+sys.path.append(os.path.join(script_dir, 'py/immunotools_utils'))
+import utils
 
 ###################################################
 class SegmentType(Enum):
@@ -69,11 +57,22 @@ class DSegmentClassification:
         classification_str += self.gene_alignment
         return classification_str
 
+    def AlignmentQuality(self):
+        num_matches = 0
+        gene_length = len([c for c in self.gene_alignment if c != '-'])
+        if gene_length == 0:
+            return 0
+        for i in range(len(self.gene_alignment)):
+            if self.gene_alignment[i] == self.segment_alignment[i]:
+                num_matches += 1
+        return float(num_matches) / gene_length * 100
+
 class DSegmentClassifier:
     def __init__(self, d_genes):
         self.d_genes = d_genes
         self.relative_diff_pos = 0.2
         self.max_variation_diff = 0.25
+        self.classifications = []
 
     def _GetContainingDGenes(self, d_segment):
         d_indices = []
@@ -122,7 +121,7 @@ class DSegmentClassifier:
         return SegmentType.NOVEL_VARIATION
 
     def _SegmentIsAmbiguousGene(self, d_indices):
-        d_base_names = set([GetBaseGeneName(self.d_genes[ind].id) for ind in d_indices])
+        d_base_names = set([utils.GetBaseGeneName(self.d_genes[ind].id) for ind in d_indices])
         return len(d_base_names) > 1
 
     def _ClassifySubstringSegment(self, segment, d_indices):
@@ -138,38 +137,64 @@ class DSegmentClassifier:
 
     def _CreateSubstringSegmentClassification(self, segment_type, segment, d_indices):
         if segment_type == SegmentType.AMBIGUOUS_GENE:
-            return DSegmentClassification(segment_type, segment, '', [GetBaseGeneName(self.d_genes[ind].id) for ind in d_indices])
+            return DSegmentClassification(segment_type, segment, '', [utils.GetBaseGeneName(self.d_genes[ind].id) for ind in d_indices])
         main_d_gene = self.d_genes[d_indices[0]]
         segment_alignment_seq = self._GetAlignmentSeqForSubstring(segment, main_d_gene.seq)
-        return DSegmentClassification(segment_type, segment_alignment_seq, main_d_gene.seq, main_d_gene.id) 
+        return DSegmentClassification(segment_type, segment_alignment_seq, main_d_gene.seq, [main_d_gene.id]) 
 
     def Classify(self, d_segment):
         d_indices = self._GetContainingDGenes(d_segment)
 #        print d_indices
         if len(d_indices) == 0:
             d_hit_alignment, d_hit = self._AlignNovelSegment(d_segment)
-            return DSegmentClassification(self._ClassifyNovelSegment(d_hit_alignment), d_hit_alignment[0], d_hit_alignment[1], d_hit)
+            return DSegmentClassification(self._ClassifyNovelSegment(d_hit_alignment), d_hit_alignment[0], d_hit_alignment[1], [d_hit])
         segment_type = self._ClassifySubstringSegment(d_segment, d_indices)
-        return self._CreateSubstringSegmentClassification(segment_type, d_segment, d_indices)
+        classification = self._CreateSubstringSegmentClassification(segment_type, d_segment, d_indices)
+        self.classifications.append(classification)
+        return classification
+
+    def GetIdentifiedGenes(self):
+        found_d_genes = set()
+        for c in self.classifications:
+            gene_ids = c.gene_ids
+            if len(gene_ids) != 1:
+                continue
+            found_d_genes.add(utils.GetBaseGeneName(gene_ids[0]))
+        missing_d_genes = set()
+        for d in self.d_genes:
+            d_base = utils.GetBaseGeneName(d.id)
+            if d_base not in found_d_genes:
+                missing_d_genes.add(d_base)
+        print str(found_d_genes) + " D genes are identified: " + str(','.join([d for d in sorted(found_d_genes)]))
+        print str(len(self.d_genes) - len(found_d_genes)) + ' D genes are missing: ' + str(','.join([d for d in sorted(missing_d_genes)]))
+        return found_d_genes, missing_d_genes
 
 def OutputClassificationsToDF(classifications, output_fname):
     fh = open(output_fname, 'w')
-    fh.write('Segment\tType\tClosest_Ds\n')
+    fh.write('Segment\tType\tClosest_Ds\tPercentIdentity\n')
     for c in classifications:
-        fh.write(c.GetSegment() + '\t' + str(c.GetSegmentType()) + '\t' + c.GetDs() + '\n')
+        fh.write(c.GetSegment() + '\t' + str(c.GetSegmentType()) + '\t' + c.GetDs() + '\t' + str(c.AlignmentQuality()) + '\n')
     fh.close()
 
 def main(segment_fasta, d_gene_fasta, output_dir):
-    PrepareOutputDir(output_dir)
-    segments = ReadFasta(segment_fasta)
-    d_genes = ReadFasta(d_gene_fasta)
+    print "== IgScout Analyzer starts"
+    utils.PrepareOutputDir(output_dir)
+    segments = utils.ReadFasta(segment_fasta)
+    print str(len(segments)) + " novel segments were extracted from " + segment_fasta
+    d_genes = utils.ReadFasta(d_gene_fasta)
+    num_initial_d_genes = len(d_genes)
+    print str(len(d_genes)) + " D were extracted from " + segment_fasta
+    d_genes = utils.CollapseIdenticalSequences(d_genes)
+    print str(len(d_genes)) + " out of " + str(num_initial_d_genes) + ' D genes are distinct'
     segment_classifier = DSegmentClassifier(d_genes)
     classifications = []
     for s in segments:
         classification = segment_classifier.Classify(s.seq)
-        print str(classification) + '\n'
+#        print str(classification) + '\n'
         classifications.append(classification)
+    segment_classifier.GetIdentifiedGenes()
     OutputClassificationsToDF(classifications, os.path.join(output_dir, 'segment_annotation.txt'))
+    print "== IgScout Analyzer ends"
 
 if __name__ == '__main__':
     if len(sys.argv) != 4:

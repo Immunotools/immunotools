@@ -14,8 +14,9 @@ from matplotlib.backends.backend_pdf import PdfPages
 import seaborn as sns
 import numpy as np
 
-sys.path.append('py/igscout_utils')
-sys.path.append('py/immunotools_utils')
+script_dir = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(script_dir, 'py/igscout_utils'))
+sys.path.append(os.path.join(script_dir, 'py/immunotools_utils'))
 import utils
 import cdr3_cropper
 
@@ -65,9 +66,9 @@ class KmerRanks:
         self._InitKmerMultDict()
         self._InitMultKmerDict()
         self._InitRankDict()
-        print str(len(self.kmer_mult_dict)) + " " + str(self.k) + '-mers were extracted from ' + str(len(self.seqs)) + ' sequences'
-        print "Maximal multiplicity: " + str(self.max_mult)
-        print "# different ranks: " + str(len(self.rank_kmer_dict))
+        #print str(len(self.kmer_mult_dict)) + " " + str(self.k) + '-mers were extracted from ' + str(len(self.seqs)) + ' sequences'
+        #print "Maximal multiplicity: " + str(self.max_mult)
+        #print "# different ranks: " + str(len(self.rank_kmer_dict))
         self.max_rank = len(self.rank_kmer_dict)
 
     def GetMostAbundantKmer(self):
@@ -101,7 +102,7 @@ class KmerRanks:
         self._InitRankDict()
         
     def RemoveKmerForRanks(self, kmer):
-        print "Removing " + kmer
+        #print "Removing " + kmer
         cur_rank = self.kmer_rank_dict[kmer]
         self.rank_kmer_dict[cur_rank].remove(kmer)
         if len(self.rank_kmer_dict[cur_rank]) == 0:
@@ -662,7 +663,7 @@ class IgScout:
         self.used_kmers = set()
         self.not_extended_kmers = set()
         self.num_iter = 1
-        self.params.min_cons_size = max(100, int(float(len(self.cdr3s)) * self.params.cons_frac))
+        self.params.min_cons_size = max(self.params.min_abs_abundance, int(float(len(self.cdr3s)) * self.params.cons_frac))
         print "Minimal k-mer multiplicity: " + str(self.params.min_cons_size)
 
     def _FilterDeNovoSegment(self, de_novo_candidate):
@@ -679,7 +680,7 @@ class IgScout:
         analyzed_indices = seq_logo.GetUsedCDR3s()
         for ind in analyzed_indices:
             self.forbidden_indices.add(ind)
-        print "Reconstructing ranks..."
+        #print "Reconstructing ranks..."
         self.kmer_ranks = KmerRanks(self.cdr3s, self.params.k, self.forbidden_indices)
 
     def _AddNewInferredCandidate(self, de_novo_candidate, top_kmer, seq_logo):
@@ -761,7 +762,7 @@ def PrintUsage():
     print "python igscout.py -i cdr3s.fasta -o output_dir [-k KMER_SIZE -v V_genes.fasta -d D_genes.fasta -j J_genes.fasta]"
 
 class Params:
-    long_opt = ['output=', 'd-genes=', 'v-genes=', 'j-genes=', 'input=', 'fraction=', 'le=', 're=', 'ic=', 'skip-plots']
+    long_opt = ['output=', 'd-genes=', 'v-genes=', 'j-genes=', 'input=', 'fraction=', 'le=', 're=', 'ic=', 'skip-plots', 'min-num-cdr3s=', 'test']
     short_opt = 'k:o:i:f:d:e:h:v:j:'
 
     def __init__(self, argv):
@@ -775,6 +776,7 @@ class Params:
         self.right_ext_len = 1
         self.cons_frac = 0.001
         self.min_conservation = 0.5
+        self.min_abs_abundance = 50
         # outputting params
         self.output_plots = True
         self.d_fasta = ''
@@ -789,7 +791,7 @@ class Params:
         if len(options) == 0:
             PrintUsage()
             sys.exit(1)
-        print options
+        #print options
         for opt, arg in options:
             if opt in ('-o', '--output'):
                 self.output_dir = arg
@@ -816,8 +818,13 @@ class Params:
                 self.min_conservation = float(arg)
             elif opt == '--skip-plots':
                 self.output_plots = False
+            elif opt == '--min-num-cdr3s':
+                self.min_abs_abundance = int(arg)
             elif opt == '-h':
                 PrintUsage()
+            elif opt == '--test':
+                self.input_fasta = os.path.abspath('test_dataset/igscout_test.fasta')
+                self.output_dir = 'igscout_test'
             else:
                 print "Invalid option: " + opt
 
