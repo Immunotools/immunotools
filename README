@@ -2,23 +2,28 @@ ImmunoTools package includes the following tools:
 - DiversityAnalyzer: a tool for basic processing immunosequencing (Rep-seq) data: VDJ alignment, finding FRs / CDRs, and finding SHMs
 - IgScout: a tool for de novo inference of D (diversity genes) using Rep-seq data
 
-Current contributors:
+Usage:
+./diversity_analyzer.py -i rep_seq_library.fastq -o output_dir -l LOCUS --org ORGANISM
 
+python igscout.py -i cdr3s.fasta -o output_igscout_dir -v V_genes.fasta -j J_genes.fasta
+python igscout_analyzer.py inferred_d_genes.fasta known_D_genes.fasta output_annotation_dir
+
+Installation instructions and manual can be found on the website:
+https://immunotools.github.io/immunotools/
+
+Current contributors:
     Yana Safonova,
     Andrey Bzikadze,
     Vinnu Bhardwaj,
     Pavel A. Pevzner
 
 Also contributed:
-
     Alexander Shlemov,
     Sergey Bankevich,
     Alla Lapidus,
     Eugene Kurpilyansky,
     Ekaterina Starostina
 
-Installation instructions and manual can be found on the website:
-https://immunotools.github.io/immunotools/
 
 References:
 
