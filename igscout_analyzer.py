@@ -165,7 +165,7 @@ class DSegmentClassifier:
             d_base = utils.GetBaseGeneName(d.id)
             if d_base not in found_d_genes:
                 missing_d_genes.add(d_base)
-        print str(found_d_genes) + " D genes are identified: " + str(','.join([d for d in sorted(found_d_genes)]))
+        print str(len(found_d_genes)) + " D genes are identified: " + str(','.join([d for d in sorted(found_d_genes)]))
         print str(len(self.d_genes) - len(found_d_genes)) + ' D genes are missing: ' + str(','.join([d for d in sorted(missing_d_genes)]))
         return found_d_genes, missing_d_genes
 
