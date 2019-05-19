@@ -49,7 +49,7 @@ class DSegmentClassification:
         return self.segment
     
     def GetSegmentType(self):
-        return self.segment_type
+        return self.segment_type.name
 
     def __str__(self):
         classification_str = str(self.segment_type) + ', closest D genes: ' + self.GetDs() + '\n'
@@ -175,6 +175,21 @@ def OutputClassificationsToDF(classifications, output_fname):
     for c in classifications:
         fh.write(c.GetSegment() + '\t' + str(c.GetSegmentType()) + '\t' + c.GetDs() + '\t' + str(c.AlignmentQuality()) + '\n')
     fh.close()
+    print "Annotation of inferred segments was written to " + output_fname
+
+def OutputAlignmentsOfInferredGenes(classifications, output_fname):
+    fh = open(output_fname, 'w')
+    index = 1
+    for c in classifications:
+        if c.GetSegmentType() == SegmentType.NOVEL_GENE:
+            continue
+        fh.write('>INDEX:' + str(index) + '|TYPE:' + str(c.GetSegmentType()) + '\n')
+        fh.write(c.segment_alignment + '\n')
+        fh.write('>INDEX:' + str(index) + '|D_genes:' + c.GetDs() + '\n')
+        fh.write(c.gene_alignment + '\n')
+        index += 1
+    fh.close()
+    print "Alignment to known D genes is written to " + output_fname
 
 def main(segment_fasta, d_gene_fasta, output_dir):
     print "== IgScout Analyzer starts"
@@ -194,6 +209,7 @@ def main(segment_fasta, d_gene_fasta, output_dir):
         classifications.append(classification)
     segment_classifier.GetIdentifiedGenes()
     OutputClassificationsToDF(classifications, os.path.join(output_dir, 'segment_annotation.txt'))
+    OutputAlignmentsOfInferredGenes(classifications, os.path.join(output_dir, 'segment_alignment.fasta'))
     print "== IgScout Analyzer ends"
 
 if __name__ == '__main__':
