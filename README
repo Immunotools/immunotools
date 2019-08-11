@@ -8,8 +8,9 @@ Usage:
 
 python igscout.py -i cdr3s.fasta -o output_igscout_dir -v V_genes.fasta -j J_genes.fasta
 python igscout_analyzer.py inferred_d_genes.fasta known_D_genes.fasta output_annotation_dir
-
 python tandem_cdr3_finder.py IGHD.fa cdr3s.fasta output_tandem_dir
+
+python ./ig_evolution.py -i diversity_analyzer_dir -o output_dir
 
 Installation instructions and manual can be found on the website:
 https://immunotools.github.io/immunotools/
