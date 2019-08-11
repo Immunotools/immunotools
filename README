@@ -5,13 +5,13 @@ ImmunoTools package includes the following tools:
 - IgEvolution: a tool for clonal analysis of antibody repertoires using immunosequencing data
 
 Usage:
-./diversity_analyzer.py -i rep_seq_library.fastq -o output_dir -l LOCUS --org ORGANISM
+./diversity_analyzer.py -i rep_seq_library.fastq -o diversity_analyzer_output_dir -l LOCUS --org ORGANISM
 
-python igscout.py -i cdr3s.fasta -o output_igscout_dir -v V_genes.fasta -j J_genes.fasta
-python igscout_analyzer.py inferred_d_genes.fasta known_D_genes.fasta output_annotation_dir
-python tandem_cdr3_finder.py IGHD.fa cdr3s.fasta output_tandem_dir
+python ./ig_evolution.py -i diversity_analyzer_output_dir -o igevolution_output_dir
 
-python ./ig_evolution.py -i diversity_analyzer_dir -o output_dir
+python igscout.py -i cdr3s.fasta -o igscout_output_dir -v V_genes.fasta -j J_genes.fasta
+python igscout_analyzer.py igscout_output_dir/inferred_segments.fasta known_D_genes.fasta output_annotation_dir
+python tandem_cdr3_finder.py IGHD.fa cdr3s.fasta tandem_finder_output_dir
 
 Installation instructions and manual can be found on the website:
 https://immunotools.github.io/immunotools/
