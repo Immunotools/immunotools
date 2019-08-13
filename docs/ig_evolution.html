@@ -21,8 +21,14 @@
     </section>
 
 <section class="main-content">
+    <ul>
+        <li><a href = "#general_info">General info</a></li>
+        <li><a href = "#usage_details">Usage details</a></li>
+        <li><a href = "#output_details">Output details</a></li>
+        <li><a href = "#citation">Citation and feedback</a></li>
+    </ul>
 
-    <h2>Usage</h2>
+    <h2 id = general_info>General info</h2>
     <p align = "justify">
         To launch IgEvolution on a Rep-seq library, type:
     </p>
@@ -57,7 +63,7 @@
         and run IgEvolution on the combined dataset.
     </p>
 
-    <h3>Optional parameters</h3>
+    <h3 id = opt_params>Optional parameters</h3>
     <table border="0">
             <col width="30%">
             <col width="30%">
@@ -131,19 +137,205 @@
     <h2 id = "output_details">Output details</h2>
 
     <h3 id = "clonal_decomposition">Clonal decomposition</h3>
+    <p align = justify>
+        IgEvolution decomposes input sequences into clonal lineages according to V and J hits and similarity of CDR3s.
+        IgEvolution reports statistics of clonal lineages into a tab-separated table <b>raw_lineage_stats.txt</b>.
+        Each line corresponds to a lineage, lineages are sorted in the descending order of their sizes.
+        <b>raw_lineage_stats.txt</b> includes the following fields:
+    </p>
+    <table>
+        <col width="30%">
+        <col width="70%">
+
+        <tr>
+            <td><b>Field</b></td>
+            <td><b>Description</b></td>
+        </tr>
+
+        <tr>
+            <td>LineageID</td>
+            <td>the unique identifier of the lineage</td>
+        </tr>
+        <tr>
+            <td>LineageSizeBeforeCleaning</td>
+            <td>the number of sequences composing the lineages before the error correction</td>
+        </tr>
+
+        <tr>
+            <td>NumNonTrivialSeqs</td>
+            <td>the number of non-trivial sequences (with multiplicities at least 2)
+            composing the lineages before the error correction</td>
+        </tr>
+
+        <tr>
+            <td>MaxMultiplicity</td>
+            <td>the maximal sequence multiplicity among all sequences</td>
+        </tr>
+
+        <tr>
+            <td>ClosestV</td>
+            <td>the closest V gene (computed by majority of raw sequences)</td>
+        </tr>
+        <tr>
+            <td>ClosestJ</td>
+            <td>the closest J gene (computed by majority of raw sequences)</td>
+        </tr>
+        <tr>
+            <td>RootId</td>
+            <td>the header of the sequence that is closer to germline than other sequences of the lineage</td>
+        </tr>
+        <tr>
+            <td>RootSeq</td>
+            <td>the nucleotide sequence of the root</td>
+        </tr>
+        <tr>
+            <td>RootCDR3</td>
+            <td>the CDR3 sequence of the root</td>
+        </tr>
+        <tr>
+            <td>RootDistanceFromGermline</td>
+            <td>the distance from the germline of the root</td>
+        </tr>
+    </table>
+
+    <p align="justify">
+        Note that clonal decomposition is computed on sequences <b>before error-correction</b>,
+        so the sizes of clonal graphs corresponding to the lineages will be significantly smaller.
+    </p>
 
     <h3 id = "clonal_graph">Clonal graphs</h3>
+    <p align="justify">
+        <i>Clonal graph</i> is a new structure introduced in the IgEvolution paper.
+        A clonal graph is an amino acid representation of the maximum spanning tree (MST) computed on
+        putative nucleotide sequences from a clonal lineage.
+        Vertices of the clonal graph correspond to distinct amino acid sequences.
+        An edge connects amino acid sequences <i>v</i> and <i>w</i> if they correspond to nucleotide sequences <i>a</i> and <i>b</i>
+        that were adjacent in the MST.
+        In other words, clonal graph is computed by collapsing vertices of the MST corresponding to the same amino acid sequences.
+    </p>
+
+    <p>
+        <img src="ig_evolution_figures/clonal_graph_definition.png">
+    </p>
+
+    <p>
+        The computed clonal graphs are written to <b>clonal graphs</b> directory.
+        Each graph is described in two files: <b>LINEAGE_ID_seqs.txt</b> and <b>LINEAGE_ID_shms.txt</b>
+        LINEAGE_ID used in the names of clonal graphs match with the IDs used in <b>raw_lineage_stats.txt</b>.
+    </p>
+
+    <h4>LINEAGE_ID_seqs.txt</h4>
+    <p align="justify">
+        <b>LINEAGE_ID_seqs.txt</b> is a tab-separated data-frame containing information about sequences of the clonal graph.
+        The file include the following fields:
+    </p>
+
+    <table>
+        <col width="30%">
+        <col width="70%">
+        <tr>
+            <td><b>Field</b></td>
+            <td><b>Description</b></td>
+        </tr>
+        <tr>
+            <td>Index</td>
+            <td>ID of the amino sequence in the clonal graph.
+                IDs vary from 0 to N-1, where N is the number sequences in the graph.
+                IDs of sequences matches with IDs used in <b>LINEAGE_ID_shms.txt</b> for edge description.</td>
+        </tr>
+        <tr>
+            <td>AA_seq</td>
+            <td>Amino acid sequence.</td>
+        </tr>
+        <tr>
+            <td>AA_diversity</td>
+            <td>The number of distinct nucleotide sequences composing the amino acid sequence.</td>
+        </tr>
+        <tr>
+            <td>Original_mults, Original_headers</td>
+            <td>Multiplicities and headers of the nucleotide sequences composing the amino acid sequence separated by commas.</td>
+        </tr>
+        <tr>
+            <td>Original_labels</td>
+            <td>
+                Labels of the nucleotide sequences composing the amino acid sequence separated by commas.
+                Labels are assigned to the combined datasets.
+                In case of non-combined datasets, all labels are 0.
+                For the details, please go to the <a href="#usage_details">Usage details</a> section.
+            </td>
+        </tr>
+        <tr>
+            <td>CDR1, CDR2, CDR3</td>
+            <td>Amino acid sequence of CDR1, CDR2, CDR3 (according to IMGT notation).</td>
+        </tr>
+        <tr>
+            <td>V_gene, J_gene</td>
+            <td>The closest V gene and J gene (computed by the majority of sequences from the clonal graph).</td>
+        </tr>
+    </table>
+
+    <h4>LINEAGE_ID_shms.txt</h4>
+    <p align="justify">
+        <b>LINEAGE_ID_shms.txt</b> is a tab-separated data-frame describing structure of the clonal graph and SHMs.
+        SHMs are computed as differences between amino acid sequences connected by an edge in the clonal graph.
+        An SHM is defined as a triplet: position in an amino acid sequence, a source amino acid, and a target amino acid.
+        The file include the following fields:
+    </p>
+
+    <table>
+        <col width="30%">
+        <col width="70%">
+        <tr>
+            <td><b>Field</b></td>
+            <td><b>Description</b></td>
+        </tr>
+        <tr>
+            <td>Position, Dst_AA, Src_AA</td>
+            <td>SHM described as a triplet.</td>
+        </tr>
+        <tr>
+            <td>Edges</td>
+            <td>
+                A list of edges containing this SHM.
+                Each edge is described as a pair <code>start_ID-end_ID</code> (e.g., 0-11).
+                IDs of start and end vertices are consistent with sequence IDs in the <b>LINEAGE_ID_seqs.txt</b> file.
+            </td>
+        </tr>
+        <tr>
+            <td>Multiplicity</td>
+            <td>
+                The number of times SHMs occurs in the graph.
+            </td>
+        </tr>
+        <tr>
+            <td>Region</td>
+            <td>
+                Structural region (CDR / FR) corresponding to the SHM.
+            </td>
+        </tr>
+        <tr>
+            <td>Has_reverse</td>
+            <td>
+                Is true, if the graph also contains an SHM <code>Position, Src_AA, Dst_AA</code>.
+            </td>
+        </tr>
+        <tr>
+            <td>V_gene, J_gene</td>
+            <td>The closest V gene and J gene (computed by the majority of sequences from the clonal graph).</td>
+        </tr>
+    </table>
 
     <h3 id = "html_report">Summary annotation report</h3>
     <p align = "justify">
         IgEvolution compiles all computed statistics and plots into a single report in HTML format.
-        IgEvolution reports for the datasets used in the paper can be found <a href = "https://immunotools.github.io/ig_evolution_results/">here</a>.
+        HTML reports for the datasets used in the paper can be found at
+        <a href = "https://immunotools.github.io/ig_evolution_results/">IgEvolution results</a> repository.
     </p>
 
     <h2 id = "citation">Citation and feedback</h2>
     <p align = "justify">
         If you use IgEvolution in your research, please cite <a href = >our paper</a>:
-        Safonova Y and Pevzner PA. IgEvolution: clonal analysis of antibody repertoires. Bioarxiv.
+        Yana Safonova and Pavel A. Pevzner. IgEvolution: clonal analysis of antibody repertoires. BioRxiv, 2019.
     </p>
 
     <p align = "justify">
