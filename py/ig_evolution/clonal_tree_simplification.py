@@ -40,8 +40,8 @@ class RelativeAbundanceLeafRemover:
         neigh = self._GetNeighbour(v)
         #print str(self._GetVertexMultiplicity(v)) + '\t' + str(self._GetVertexMultiplicity(neigh)) + '\t' + str(float(self._GetVertexMultiplicity(v)) / self._GetVertexMultiplicity(neigh)) + '\t' + str(len(self.clonal_tree.GetVertexNeighs(neigh)))
         rel_mult = float(self._GetVertexMultiplicity(v)) / self._GetVertexMultiplicity(neigh) 
-        fh = open('relative_multiplicity.txt', 'a+')
-        fh.write(str(rel_mult) + '\n')
+#        fh = open('relative_multiplicity.txt', 'a+')
+#        fh.write(str(rel_mult) + '\n')
         return rel_mult <= self.min_rel_abundance
 
     def Name(self):

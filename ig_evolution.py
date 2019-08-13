@@ -87,9 +87,9 @@ class AlgorithmConfig:
 
     def _ParseArgs(self, args):
         try:
-            options, remainder = getopt.getopt(args[1:], 'i:o:', ["parse-mult", 'min-lineage=', 'max-lineage=', 'min-abs=',
+            options, remainder = getopt.getopt(args[1:], 'i:o:', ["parse-mults", 'min-lineage=', 'max-lineage=', 'min-abs=',
                                                                   'min-rel=', 'hg-tau=', 'min-graph=', 'help',
-                                                                  '--skip-err-corr', '--keep-aux-files'])
+                                                                  'skip-err-corr', 'keep-aux-files'])
         except getopt.GetoptError as err:
             print str(err)  # will print something like "option -a not recognized"
             sys.exit(2)
@@ -98,7 +98,7 @@ class AlgorithmConfig:
                 self.divan_dir = arg
             elif opt == '-o':
                 self.output_dir = arg
-            elif opt == '--parse-mult':
+            elif opt == '--parse-mults':
                 self.parse_headers = True
             elif opt == '--min-lineage':
                 self.min_lineage_size = int(arg)
@@ -130,7 +130,9 @@ class AlgorithmConfig:
             sys.exit(1)
 
     def _PrintHelp(self):
-        print "python ig_evolution_launch.py -i divan_dir -o output_dir [--min MIN_LIN_SIZE --max MAX_LIN_SIZE --min-graph MIN_GRAPH_SIZE --hg-tau HG_TAU --min-abs MIN_ABS_ABUN --min-rel MIN_REL_ABUN --parse-mult]"
+        print "python ig_evolution_launch.py -i divan_dir -o output_dir [--min-lineage MIN_LIN_SIZE " \
+              "--max-lineage MAX_LIN_SIZE --min-graph MIN_GRAPH_SIZE --hg-tau HG_TAU --min-abs MIN_ABS_ABUN " \
+              "--min-rel MIN_REL_ABUN --parse-mults --skip-err-corr]"
 
 def main(argv):
     config = AlgorithmConfig(argv)
