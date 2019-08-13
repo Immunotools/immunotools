@@ -7,7 +7,7 @@ ImmunoTools package includes the following tools:
 Usage:
 ./diversity_analyzer.py -i rep_seq_library.fastq -o diversity_analyzer_output_dir -l LOCUS --org ORGANISM
 
-python ./ig_evolution.py -i diversity_analyzer_output_dir -o igevolution_output_dir
+./ig_evolution.py -i diversity_analyzer_output_dir -o igevolution_output_dir
 
 python igscout.py -i cdr3s.fasta -o igscout_output_dir -v V_genes.fasta -j J_genes.fasta
 python igscout_analyzer.py igscout_output_dir/inferred_segments.fasta known_D_genes.fasta output_annotation_dir
