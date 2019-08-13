@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="UTF-8">
+    <title>IgEvolution</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+</head>
+<body>
+
+<section class="page-header">
+      <h1 class="project-name" align=center>IgEvolution</h1>
+      <h2 class="project-tagline" align=center>Tool for clonal analysis of antibody repertoires</h2>
+      <a href="index.html" class="btn"><b>Home</b></a>
+      <a href="https://github.com/Immunotools/immunotools" class="btn"><b>View on GitHub</b></a>
+      <a href="https://github.com/Immunotools/immunotools/zipball/master" class="btn"><b>Download .zip</b></a>
+      <a href="https://github.com/Immunotools/immunotools/tarball/master" class="btn"><b>Download .tar.gz</b></a>
+    </section>
+
+<section class="main-content">
+
+    <h2>Usage</h2>
+    <p align = "justify">
+        To launch IgEvolution on a Rep-seq library, type:
+    </p>
+
+    <p>
+        <code>
+            ./diversity_analyzer.py -i REP_SEQ_FILE -o DIVERSITY_ANALYZER_DIR -l IG <br>
+            ./ig_evolution.py -i DIVERSITY_ANALYZER_DIR -o IGEVOLUTION_DIR
+        </code>
+    </p>
+
+    <ul>
+        <li><b>REP_SEQ_FILE:</b> Rep-seq library in FASTA/FASTQ format.
+            Please Diversity Analyzer expects single Rep-seq libraries.
+            If the original library is paired-end (e.g., Illumina MiSeq), please preliminary merge paired-end reads.
+        </li>
+        <li><b>DIVERSITY_ANALYZER_DIR:</b> output directory of Diversity Analyzer.
+        <li><b>LOCUS:</b> name of the locus that will be used for alignment.
+        <li><b>IGEVOLUTION_DIR:</b> output directory of IgEvolution.</li>
+    </ul>
+
+    <p align = justify>
+        Please note that both DiversityAnalyzer and IgEvolution check the existence of output directory,
+        <b>remove the directory if it exists</b>,
+        and create an empty directory with name DIVERSITY_ANALYZER_DIR or IGEVOLUTION_DIR.
+        So, we highly recommend not to specify an existing directory (e.g., the home directory) as output directories!
+    </p>
+
+    <p align = justify>
+        If you want to launch IgEvolution on several Rep-seq datasets (e.g., vaccination time points),
+        we recommend to <a href = "#combine_data">combine the results</a> of Diversity Analyzer on individual Rep-seq datasets,
+        and run IgEvolution on the combined dataset.
+    </p>
+
+    <h3>Optional parameters</h3>
+    <table border="0">
+            <col width="30%">
+            <col width="30%">
+            <col width="40%">
+        <tr>
+            <td><b>Description</b></td>
+            <td><b>Option</b></td>
+            <td><b>Values</b></td>
+        </tr>
+
+        <tr>
+            <td>Minimal lineage size</td>
+            <td><code>--min-lineage INT</code></td>
+            <td>
+                Minimal size of the processed lineages. Default value is 1000.
+                Please note that typically a Rep-seq dataset includes tens of thousands of small lineages,
+                so changing this parameter might slow down the tool significantly.
+            </td>
+        </tr>
+
+        <tr>
+            <td>Minimal graph size</td>
+            <td><code>--min_graph INT</code></td>
+            <td>Minimal size of the reported clonal graphs. Default value is 10.</td>
+        </tr>
+
+        <tr>
+            <td>Skip error-correction</td>
+            <td><code>--skip-err-corr</code></td>
+            <td>
+                Skip the error correction step. Please apply this option only if you are sure that input sequences are accurate.
+                Otherwise, the results of IgEvolution might be biased.
+            </td>
+        </tr>
+
+        <tr>
+            <td>Process combined datasets / Parse sequence multiplicities</td>
+            <td><code>--parse-mults</code></td>
+            <td>
+                For processing a dataset that was combined from several Rep-seq libraries, please specify this option.
+                Also IgEvolution can parse information about sequence multiplicities computed using other tools (e.g., pRESTO, MiXCR, IgReC).
+                For the details, please go to the <a href = #usage_details>Usage details</a>.
+            </td>
+        </tr>
+
+         <tr>
+            <td>Clonal decomposition</td>
+            <td><code>--clonal-dec FILENAME</code></td>
+            <td>This option is reserved for future development of IgEvolution.</td>
+        </tr>
+    </table>
+
+    <h3>Output</h3>
+    <p align = "justify">
+        IgEvolution decomposes input sequences into <a href = #clonal_decomposition>clonal lineages</a>;
+        performs error-correction and clonal reconstruction within each clonal lineage;
+        outputs the result of clonal reconstruction as a collection of <a href = #clonal_graph>clonal graphs</a>; and
+        visualizes graph and graph statistics <a href = "#html_report">summary in user-friendly HTML format</a>.
+    </p>
+    <p align = justify>
+        For the detailed description of output, please go to the <a href = #output_details>Output details</a>.
+    </p>
+
+    <h2 id = "usage_details">Usage details</h2>
+
+    <h3 id = "combine_data">Combining several Rep-seq datasets</h3>
+
+    <h3 id = "parse_mults">Parsing multiplicities</h3>
+
+
+    <h2 id = "output_details">Output details</h2>
+
+    <h3 id = "clonal_decomposition">Clonal decomposition</h3>
+
+    <h3 id = "clonal_graph">Clonal graphs</h3>
+
+    <h3 id = "html_report">Summary annotation report</h3>
+    <p align = "justify">
+        IgEvolution compiles all computed statistics and plots into a single report in HTML format.
+        IgEvolution reports for the datasets used in the paper can be found <a href = "https://immunotools.github.io/ig_evolution_results/">here</a>.
+    </p>
+
+    <h2 id = "citation">Citation and feedback</h2>
+    <p align = "justify">
+        If you use IgEvolution in your research, please cite <a href = >our paper</a>:
+        Safonova Y and Pevzner PA. IgEvolution: clonal analysis of antibody repertoires. Bioarxiv.
+    </p>
+
+    <p align = "justify">
+       If you have any questions or troubles with running IgEvolution, please contact <a href = "mailto:safonova.yana@gmail.com">Yana Safonova</a>.
+        We also will be happy to hear your suggestions about improvement of our tools!
+    </p>
+
+    <hr>
+    <!------------------------------------------------------------------------>
+</section>
