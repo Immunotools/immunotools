@@ -49,7 +49,7 @@
 
     <ul>
         <li><b>REP_SEQ_FILE:</b> Rep-seq library in FASTA/FASTQ format.
-            Please note that Diversity Analyzer expects Rep-seq libraries with single layout.
+            Please note that Diversity Analyzer expects Rep-seq libraries with single layout of reads.
             If the original library is paired-end (e.g., raw files from Illumina MiSeq), please merge paired-end reads.
         </li>
         <li><b>DIVERSITY_ANALYZER_DIR:</b> output directory of Diversity Analyzer.
@@ -61,7 +61,7 @@
         Please note that both DiversityAnalyzer and IgEvolution check the existence of output directory,
         <b>remove the directory if it exists</b>,
         and create an empty directory with name DIVERSITY_ANALYZER_DIR or IGEVOLUTION_DIR.
-        So, we highly recommend not to specify an existing directory (e.g., the home directory) as output directories!
+        So, we highly recommend to not specify an existing directory (e.g., the home directory) as output directories!
     </p>
 
     <p align = justify>
@@ -86,22 +86,26 @@
             <td><code>--min-lineage INT</code></td>
             <td>
                 Minimal size of the processed lineages. Default value is 1000.
-                Please note that typically a Rep-seq dataset includes tens of thousands of small lineages,
-                so changing this parameter might slow down the tool significantly.
+                Please note that a typical Rep-seq dataset (100k–1M reads) includes tens of thousands of small lineages (<100 sequences),
+                so decreasing this parameter might significantly slow down the tool.
             </td>
         </tr>
 
         <tr>
             <td>Minimal graph size</td>
             <td><code>--min_graph INT</code></td>
-            <td>Minimal size of the reported clonal graphs. Default value is 10.</td>
+            <td>
+                Minimal size of the reported clonal graphs. 
+                Default value is 10.
+            </td>
         </tr>
 
         <tr>
             <td>Skip error-correction</td>
             <td><code>--skip-err-corr</code></td>
             <td>
-                Skip the error correction step. Please apply this option only if you are sure that input sequences are accurate.
+                Skip the error correction step. 
+                Please apply this option only if you are sure that input sequences are accurate.
                 Otherwise, the results of IgEvolution might be biased.
             </td>
         </tr>
@@ -110,15 +114,17 @@
             <td>Process combined datasets / Parse sequence multiplicities</td>
             <td><code>--parse-mults</code></td>
             <td>
-                For processing a dataset that was combined from several Rep-seq libraries, please specify this option
-                [<a href = #usage_details>details...</a>].
+                Specify this option for processing a dataset that was combined from several Rep-seq libraries 
+                [<a href = #combine_data>details...</a>].
             </td>
         </tr>
 
          <tr>
             <td>Clonal decomposition</td>
             <td><code>--clonal-dec FILENAME</code></td>
-            <td>This option is reserved for future development of IgEvolution.</td>
+            <td>
+                This option is reserved for future development of IgEvolution.
+             </td>
         </tr>
     </table>
 
@@ -126,20 +132,16 @@
     <p align = "justify">
         IgEvolution decomposes input sequences into <a href = #clonal_decomposition>clonal lineages</a>;
         performs error-correction and clonal reconstruction within each clonal lineage;
-        outputs the result of clonal reconstruction as a collection of <a href = #clonal_graph>clonal graphs</a>; and
-        visualizes graph and graph statistics <a href = "#html_report">summary in user-friendly HTML format</a>.
-    </p>
-    <p align = justify>
-        For the detailed description of output, please go to the <a href = #output_details>Output details</a>.
+        outputs the result of clonal reconstruction as a collection of <a href = #clonal_graph>clonal graphs</a>; 
+        and visualizes clonal graphs and graph statistics in <a href = "#html_report">user-friendly HTML format</a> 
+        [<a href = #output_details>details...</a>].
     </p>
 
-    <h2 id = "usage_details">Usage details</h2>
-
-    <h3 id = "combine_data">Combining several Rep-seq datasets</h3>
-
+    <h2 id = "combine_data">Combining several Rep-seq datasets</h2>
+    
     <p align="justify">
         Some studies analyze the dynamic of antibody response or antibody response in various tissues.
-        In this case more than one Rep-seq library can be available.
+        In this case, more than one Rep-seq library can be available.
         Such libraries can be analyzed together using the following pipeline:
     </p>
 
@@ -150,10 +152,11 @@
         <p>
             <code>
             Directory Label<br>
-            Path_to_Diversity_Analyzer_dir_1 Label_1<br>
+            path_to_Diversity_Analyzer_dir_1 label_1<br>
             ...<br>
-            Path_to_Diversity_Analyzer_dir_N Label_N<br>
-            </code>
+            path_to_Diversity_Analyzer_dir_N label_N<br>
+            </code><br>
+            where <code>label_i</code> is a number.
         </p>
 
         <p align="justify">
@@ -167,10 +170,10 @@
         <p>
         <code>
             Directory       Label<br>
-            PRJNA324093_directory/SRR3620047_diversity_analyzer/    7<br>
-            PRJNA324093_directory/SRR3620069_diversity_analyzer/    7<br>
-            PRJNA324093_directory/SRR3620102_diversity_analyzer/    14<br>
-            PRJNA324093_directory/SRR3620028_diversity_analyzer/    28
+            <global_path>/PRJNA324093_directory/SRR3620047_diversity_analyzer/    7<br>
+            <global_path>/PRJNA324093_directory/SRR3620069_diversity_analyzer/    7<br>
+            <global_path>/PRJNA324093_directory/SRR3620102_diversity_analyzer/    14<br>
+            <global_path>/PRJNA324093_directory/SRR3620028_diversity_analyzer/    28
         </code>
         </p>
 
@@ -182,7 +185,6 @@
         </p>
 
         <li>Run IgEvolution on the combined datasets with <b><code>--parse-mults</code></b> option:</li>
-
         <p>
             <code>
                 ./ig_evolution.py -i OUTPUT_COMBINED_DIR -o IGEVOLUTION_DIR --parse-mults
@@ -200,7 +202,7 @@
     <p align = justify>
         IgEvolution decomposes input sequences into clonal lineages according to V and J hits and similarity of CDR3s.
         IgEvolution reports statistics of clonal lineages into a tab-separated table <b>raw_lineage_stats.txt</b>.
-        Each line corresponds to a lineage, lineages are sorted in the descending order of their sizes.
+        Each line corresponds to a lineage, lineages are sorted according to the descending order of the sizes.
         <b>raw_lineage_stats.txt</b> includes the following fields:
     </p>
     <table>
@@ -223,7 +225,7 @@
 
         <tr>
             <td>NumNonTrivialSeqs</td>
-            <td>the number of non-trivial sequences (with multiplicities at least 2)
+            <td>the number of non-trivial sequences (i.e., with multiplicity at least 2)
             composing the lineages before the error correction</td>
         </tr>
 
@@ -233,28 +235,20 @@
         </tr>
 
         <tr>
-            <td>ClosestV</td>
-            <td>the closest V gene (computed by majority of raw sequences)</td>
-        </tr>
-        <tr>
-            <td>ClosestJ</td>
-            <td>the closest J gene (computed by majority of raw sequences)</td>
+            <td>ClosestV, ClosestJ</td>
+            <td>the closest V gene and J gene (computed by majority of raw sequences)</td>
         </tr>
         <tr>
             <td>RootId</td>
             <td>the header of the sequence that is closer to germline than other sequences of the lineage</td>
         </tr>
         <tr>
-            <td>RootSeq</td>
-            <td>the nucleotide sequence of the root</td>
-        </tr>
-        <tr>
-            <td>RootCDR3</td>
-            <td>the CDR3 sequence of the root</td>
+            <td>RootSeq, RootCDR3</td>
+            <td>the nucleotide sequence and the CDR3 sequence of the root</td>
         </tr>
         <tr>
             <td>RootDistanceFromGermline</td>
-            <td>the distance from the germline of the root</td>
+            <td>the distance between the root sequence and the closest germline genes</td>
         </tr>
     </table>
 
