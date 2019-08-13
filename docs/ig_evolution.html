@@ -29,8 +29,15 @@
     </ul>
 
     <h2 id = general_info>General info</h2>
+
     <p align = "justify">
-        To launch IgEvolution on a Rep-seq library, type:
+        IgEvolution performs simultaneous repertoire and clonal tree reconstruction of a Rep-seq library taken from an antibody repertoire.
+        To run IgEvolution, first run <a href="diversity_analyzer.html">DiversityAnalyzer</a> and
+        then provide the resulting output directory as an input for IgEvolution:
+    </p>
+
+    <p>
+        <img src="ig_evolution_figures/ig_evolution_usage.png">
     </p>
 
     <p>
@@ -42,11 +49,11 @@
 
     <ul>
         <li><b>REP_SEQ_FILE:</b> Rep-seq library in FASTA/FASTQ format.
-            Please Diversity Analyzer expects single Rep-seq libraries.
-            If the original library is paired-end (e.g., Illumina MiSeq), please preliminary merge paired-end reads.
+            Please note that Diversity Analyzer expects Rep-seq libraries with single layout.
+            If the original library is paired-end (e.g., raw files from Illumina MiSeq), please merge paired-end reads.
         </li>
         <li><b>DIVERSITY_ANALYZER_DIR:</b> output directory of Diversity Analyzer.
-        <li><b>LOCUS:</b> name of the locus that will be used for alignment.
+
         <li><b>IGEVOLUTION_DIR:</b> output directory of IgEvolution.</li>
     </ul>
 
@@ -58,7 +65,7 @@
     </p>
 
     <p align = justify>
-        If you want to launch IgEvolution on several Rep-seq datasets (e.g., vaccination time points),
+        If you want to launch IgEvolution on <b>several Rep-seq datasets</b> (e.g., time course of a vaccination),
         we recommend to <a href = "#combine_data">combine the results</a> of Diversity Analyzer on individual Rep-seq datasets,
         and run IgEvolution on the combined dataset.
     </p>
@@ -103,9 +110,8 @@
             <td>Process combined datasets / Parse sequence multiplicities</td>
             <td><code>--parse-mults</code></td>
             <td>
-                For processing a dataset that was combined from several Rep-seq libraries, please specify this option.
-                Also IgEvolution can parse information about sequence multiplicities computed using other tools (e.g., pRESTO, MiXCR, IgReC).
-                For the details, please go to the <a href = #usage_details>Usage details</a>.
+                For processing a dataset that was combined from several Rep-seq libraries, please specify this option
+                [<a href = #usage_details>details...</a>].
             </td>
         </tr>
 
@@ -131,8 +137,62 @@
 
     <h3 id = "combine_data">Combining several Rep-seq datasets</h3>
 
-    <h3 id = "parse_mults">Parsing multiplicities</h3>
+    <p align="justify">
+        Some studies analyze the dynamic of antibody response or antibody response in various tissues.
+        In this case more than one Rep-seq library can be available.
+        Such libraries can be analyzed together using the following pipeline:
+    </p>
 
+    <ol>
+        <li>Run Diversity Analyzer on each of the original libraries.</li>
+        <li>Prepare a configuration file <b>config.txt</b> in following format:</li>
+
+        <p>
+            <code>
+            Directory Label<br>
+            Path_to_Diversity_Analyzer_dir_1 Label_1<br>
+            ...<br>
+            Path_to_Diversity_Analyzer_dir_N Label_N<br>
+            </code>
+        </p>
+
+        <p align="justify">
+        An example of the configuration file for flu vaccination study by Ellebedy et al., Nat Immunol, 2016
+            (NCBI project PRJNA324093, donor 4) is provided below.
+        We selected four Rep-seq libraries corresponding to HA-positive B cells taken from 3 time points:
+        7th, 14th, and 28th days after the vaccination of the donor #4.
+        We used time points of the original libraries as labels.
+        </p>
+
+        <p>
+        <code>
+            Directory       Label<br>
+            PRJNA324093_directory/SRR3620047_diversity_analyzer/    7<br>
+            PRJNA324093_directory/SRR3620069_diversity_analyzer/    7<br>
+            PRJNA324093_directory/SRR3620102_diversity_analyzer/    14<br>
+            PRJNA324093_directory/SRR3620028_diversity_analyzer/    28
+        </code>
+        </p>
+
+        <li>Combine datasets together using the <code>combine_datasets.py</code> script:</li>
+        <p>
+            <code>
+                python combine_datasets.py -c CONFIG.TXT -o OUTPUT_COMBINED_DIR
+            </code>
+        </p>
+
+        <li>Run IgEvolution on the combined datasets with <b><code>--parse-mults</code></b> option:</li>
+
+        <p>
+            <code>
+                ./ig_evolution.py -i OUTPUT_COMBINED_DIR -o IGEVOLUTION_DIR --parse-mults
+            </code>
+        </p>
+    </ol>
+
+    <p>
+        <img src="ig_evolution_figures/combining_datasets.png">
+    </p>
 
     <h2 id = "output_details">Output details</h2>
 
@@ -218,7 +278,12 @@
         <img src="ig_evolution_figures/clonal_graph_definition.png">
     </p>
 
-    <p>
+    <p align="justify">
+        Grey vertices correspond to sequences classified as erroneous.
+        Vertices with the same non-grey color correspond to identical amino acid sequences.
+    </p>
+
+    <p align="justify">
         The computed clonal graphs are written to <b>clonal graphs</b> directory.
         Each graph is described in two files: <b>LINEAGE_ID_seqs.txt</b> and <b>LINEAGE_ID_shms.txt</b>
         LINEAGE_ID used in the names of clonal graphs match with the IDs used in <b>raw_lineage_stats.txt</b>.
@@ -240,7 +305,7 @@
         <tr>
             <td>Index</td>
             <td>ID of the amino sequence in the clonal graph.
-                IDs vary from 0 to N-1, where N is the number sequences in the graph.
+                IDs vary from 0 to N-1, where N is the number of sequences in the graph.
                 IDs of sequences matches with IDs used in <b>LINEAGE_ID_shms.txt</b> for edge description.</td>
         </tr>
         <tr>
@@ -296,7 +361,7 @@
         <tr>
             <td>Edges</td>
             <td>
-                A list of edges containing this SHM.
+                Comma separated list of edges containing the SHM.
                 Each edge is described as a pair <code>start_ID-end_ID</code> (e.g., 0-11).
                 IDs of start and end vertices are consistent with sequence IDs in the <b>LINEAGE_ID_seqs.txt</b> file.
             </td>
