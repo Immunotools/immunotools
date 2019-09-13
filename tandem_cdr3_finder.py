@@ -23,14 +23,22 @@ sys.path.append(os.path.join(script_dir, 'py/immunotools_utils'))
 import utils
 import cdr3_cropper
 
-min_k = 11
-
 def ReadFasta(fasta_fname):
     records = []
     for r in SeqIO.parse(fasta_fname, 'fasta'):
         r.seq = str(r.seq).upper()
         records.append(r)
     return records
+
+def CollapseIdenticalCDR3s(cdr3s):
+    cdr3_set = set()
+    distinct_cdr3s = []
+    for cdr3 in cdr3s:
+        if cdr3.seq in cdr3_set:
+            continue
+        distinct_cdr3s.append(cdr3)
+        cdr3_set.add(cdr3.seq)
+    return distinct_cdr3s
 
 def GetDDict(d_records):
     d_dict = dict()
@@ -61,7 +69,7 @@ def CreateDOrder(d_genes):
 ########################################
 # Finding D match routines
 ########################################
-def FindLongestDMatches(cdr3, d_genes):
+def FindLongestDMatches(cdr3, d_genes, min_k):
     d_dict = dict()
     for d in d_genes:
         forbidden_pos = set()
@@ -377,8 +385,8 @@ class TandemCDR3:
     def Seq(self):
         return self.cdr3.seq
 
-def ClassifyCDR3(cdr3, d_genes):
-    d_seg_dict = FindLongestDMatches(cdr3.seq, d_genes)
+def ClassifyCDR3(cdr3, d_genes, min_k):
+    d_seg_dict = FindLongestDMatches(cdr3.seq, d_genes, min_k)
     if len(d_seg_dict) == 0:
         return NonTraceableCDR3(cdr3)
     non_red_dict = CreateNonRedundantDDict(d_seg_dict)
@@ -393,10 +401,10 @@ def ClassifyCDR3(cdr3, d_genes):
         return NonTraceableCDR3(cdr3)
     return TandemCDR3(cdr3, tandem_d)
 
-def ClassifyCDR3s(cdr3s, d_genes):
+def ClassifyCDR3s(cdr3s, d_genes, min_k):
     cdr3_dict = {CDR3Type.NONTRACEABLE : [], CDR3Type.SINGLE : [], CDR3Type.TANDEM : []} # type -> list of CDR3s
     for cdr3 in cdr3s:
-        cdr3_classification = ClassifyCDR3(cdr3, d_genes)
+        cdr3_classification = ClassifyCDR3(cdr3, d_genes, min_k)
         cdr3_dict[cdr3_classification.Type()].append(cdr3_classification)
     return cdr3_dict
         
@@ -442,7 +450,7 @@ def FilterErroneousTandemCDR3s(tandem_cdr3s, d_genes, min_dist = 3):
     return good_tandems
 
 ############################################
-def main(d_fasta, cdr3_fasta, output_dir):
+def main(d_fasta, cdr3_fasta, output_dir, min_k):
     print "== Tandem CDR3 Finder starts..."
     d_genes = ReadFasta(d_fasta)
     print str(len(d_genes)) + " D gene alleles were extracted from " + d_fasta
@@ -451,6 +459,8 @@ def main(d_fasta, cdr3_fasta, output_dir):
 
     cdr3s = ReadFasta(cdr3_fasta)
     print str(len(cdr3s)) + " CDR3s were extracted from " + cdr3_fasta
+    cdr3s = CollapseIdenticalCDR3s(cdr3s)
+    print str(len(cdr3s)) + " CDR3s are distinct"
     cropper = cdr3_cropper.CDR3Cropper('', '', min_k)
     cropped_cdr3s = cropper.CropCDR3s(cdr3s)
 
@@ -463,7 +473,7 @@ def main(d_fasta, cdr3_fasta, output_dir):
     all_d_genes = GetAllDs(d_genes)
     ordered_d_names = CreateDOrder(d_genes)
 
-    cdr3_dict = ClassifyCDR3s(cropped_cdr3s, d_genes)
+    cdr3_dict = ClassifyCDR3s(cropped_cdr3s, d_genes, min_k)
 
     # general stats
     OutputBaseCDR3Stats(cdr3_dict[CDR3Type.NONTRACEABLE], len(cdr3s), 'non-traceable')
@@ -490,7 +500,7 @@ def main(d_fasta, cdr3_fasta, output_dir):
     OutputDDMatrix(ordered_d_names, dd_dict, os.path.join(output_dir, 'tandem_dd_matrix.pdf'))
 
 if __name__ == '__main__':
-    if len(sys.argv) != 4:
-        print "tandem_cdr3_finder.py IGHD.fa cdr3s.fasta output_dir"
+    if len(sys.argv) != 5:
+        print "tandem_cdr3_finder.py IGHD.fa cdr3s.fasta output_dir min_k"
         sys.exit(1)
-    main(sys.argv[1], sys.argv[2], sys.argv[3])
+    main(sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4]))
