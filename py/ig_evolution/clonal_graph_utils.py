@@ -417,8 +417,8 @@ def OutputAbundantAAGraphs(full_length_lineages, output_dirs, config):
         if cleaned_tree.NumVertices() < config.min_graph_size:
             continue
         # writing clonal tree
-        #stats_writer = clonal_tree_stats.ClonalTreeStatsWriter(cleaned_tree)
-        #stats_writer.Output(os.path.join(output_dirs['clonal_graphs'], l.id() + '_after_simpl.txt'))
+        stats_writer = clonal_tree_stats.ClonalTreeStatsWriter(cleaned_tree)
+        stats_writer.Output(os.path.join(output_dirs['clonal_graphs'], l.id() + '_after_simpl.txt'))
         #OutputClonalTree(cleaned_tree, l, os.path.join(output_dirs['clonal_graphs'], l.id() + '_after_simpl'), clonal_tree_writer.LevelMultiplicityVertexWriter(cleaned_tree))
         #OutputClonalTree(cleaned_tree, l, os.path.join(output_dirs['clonal_graphs'], l.id() + '_nucl_tree'), clonal_tree_writer.UniqueAAColorWriter(cleaned_tree))
         # aa graph

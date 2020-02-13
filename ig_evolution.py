@@ -89,7 +89,7 @@ class AlgorithmConfig:
         try:
             options, remainder = getopt.getopt(args[1:], 'i:o:', ["parse-mults", 'min-lineage=', 'max-lineage=', 'min-abs=',
                                                                   'min-rel=', 'hg-tau=', 'min-graph=', 'help',
-                                                                  'skip-err-corr', 'keep-aux-files'])
+                                                                  'skip-err-corr', 'keep-aux-files', 'all'])
         except getopt.GetoptError as err:
             print str(err)  # will print something like "option -a not recognized"
             sys.exit(2)
@@ -117,6 +117,9 @@ class AlgorithmConfig:
                 self.max_rel_abundance = 0
             elif opt == '--keep-aux-files':
                 self.remove_aux_files = False
+            elif opt == '--all':
+                self.min_graph_size = 1
+                self.min_lineage_size = 1
             elif opt == '--help':
                 self._PrintHelp()
                 sys.exit(0)
