@@ -73,7 +73,7 @@ def RemoveAuxDirs(output_dirs):
 class AlgorithmConfig:
     def __init__(self, args):
         self.min_abs_abundance = 5
-        self.max_rel_abundance = 0.05 #0.05
+        self.max_rel_abundance = 0.01 #0.05
         self.min_graph_size = 10
         self.parse_headers = False
         self.min_lineage_size = 100
