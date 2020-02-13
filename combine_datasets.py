@@ -105,6 +105,7 @@ def ParseOptions(sys_args):
     except getopt.GetoptError as err:
         print str(err)  # will print something like "option -a not recognized"
         sys.exit(2)
+    print options, remainder
     for opt, arg in options:
         if opt == "-c":
             input_config.config_fname = arg
@@ -114,9 +115,6 @@ def ParseOptions(sys_args):
             input_config.parse_mult = True
         else:
             assert False, "unhandled option"
-    if len(options) == 0:
-        print 'python combine_datasets.py -c CONFIG.TXT -o OUTPUT_DIR'
-        sys.exit(1)
     return input_config    
 
 def ComputeDistinctSequences(divan_dirs):
@@ -217,10 +215,10 @@ class CombinedDataWriter:
             new_seq_id = self.seq_id_dict[(divan_ind, old_seq_id)]
             v_alignment = divan_dir.GetVAlignmentBySeq(seq)
             read_id_splits = v_alignment[0][0].split('|')
-            if len(read_id_splits) != 4:
-                print "Unexpected format: " + str(read_id_splits)
-                sys.exit(1)
-            fh.write('>INDEX:' + str(record_index) + '|READ:' + new_seq_id + '|' + read_id_splits[2] + '|' + read_id_splits[3] + '\n')
+#            if len(read_id_splits) != 4:
+#                print "Unexpected format: " + str(read_id_splits)
+#                sys.exit(1)
+            fh.write('>INDEX:' + str(record_index) + '|READ:' + new_seq_id + '|' + read_id_splits[-2] + '|' + read_id_splits[-1] + '\n')
             fh.write(v_alignment[0][1] + '\n')
             gene_splits = v_alignment[1][0].split('|')
             fh.write('>INDEX:' + str(record_index) + '|' + gene_splits[1] + '|' + gene_splits[2] + '|' + gene_splits[3] + '\n')
