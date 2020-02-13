@@ -461,7 +461,7 @@ def main(d_fasta, cdr3_fasta, output_dir, min_k):
     print str(len(cdr3s)) + " CDR3s were extracted from " + cdr3_fasta
     cdr3s = CollapseIdenticalCDR3s(cdr3s)
     print str(len(cdr3s)) + " CDR3s are distinct"
-    cropper = cdr3_cropper.CDR3Cropper('', '', min_k)
+    cropper = cdr3_cropper.CDR3Cropper('data/germline/human/IG/IGHV.fa', 'data/germline/human/IG/IGHJ.fa', min_k)
     cropped_cdr3s = cropper.CropCDR3s(cdr3s)
 
     # prepare output dir
@@ -489,7 +489,16 @@ def main(d_fasta, cdr3_fasta, output_dir, min_k):
     single_output_dir = os.path.join(output_dir, "single_d_usage")
     os.mkdir(single_output_dir)
     for d in single_usage:
-        OutputDCoverage(d, d_dict[d], single_usage[d], os.path.join(single_output_dir, 'single_' + d + '.pdf')) 
+        OutputDCoverage(d, d_dict[d], single_usage[d], os.path.join(single_output_dir, 'single_' + d + '.pdf'))
+    output_fh = open(os.path.join(output_dir, 'd_labeling.txt'), 'w')
+    output_fh.write('CDR3\tD_match\tLeft_ins\tRight_ins\n')
+    for d in single_usage:
+        for cdr3 in single_usage[d]:
+            cdr3_seq = cdr3.cdr3.seq
+            d_match = cdr3.single_d_match.Seq()
+            d_start = cdr3.cdr3.seq.find(d_match)
+            output_fh.write(cdr3_seq + '\t' + d_match + '\t' + cdr3_seq[ : d_start] + '\t' + cdr3_seq[d_start + len(d_match) : ] + '\n')
+    output_fh.close() 
 
     # tandem usage
     print "== Analysis of tandem CDR3s..."
