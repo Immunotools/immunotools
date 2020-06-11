@@ -283,7 +283,7 @@ class SeqStorage:
 ################################### CDR DETAILS ##################################
 class AnnotationDF:
     def __init__(self, df_fname):
-        self.df = pd.read_table(df_fname, delim_whitespace = True)
+        self.df = pd.read_csv(df_fname, delim_whitespace = True)
         self.read_index_map = dict() # sequence id -> index in self.df
         for i in range(len(self.df)):
             self.read_index_map[self.df['Read_name'][i]] = i

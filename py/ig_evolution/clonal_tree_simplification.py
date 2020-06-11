@@ -55,6 +55,8 @@ class IterativeTipRemover:
     def _CleanTipsInCurrentTree(self, vertex_filter):
         vertices_to_remove = []
         for v in self.clonal_tree.VertexIter():
+            if len(vertices_to_remove) == self.clonal_tree.NumVertices() - 1:
+                break
             if vertex_filter.VertexToBeRemoved(v):
                 vertices_to_remove.append(v)
         for v in vertices_to_remove:
@@ -63,12 +65,12 @@ class IterativeTipRemover:
 
     def CleanTips(self):
         for vertex_filter in self.vertex_filters:
-            print "== Applying " + vertex_filter.Name()
+#            print "== Applying " + vertex_filter.Name()
             num_removed_vertices = 1
             iteration_step = 1
             while num_removed_vertices != 0: 
                 num_removed_vertices = self._CleanTipsInCurrentTree(vertex_filter)
-                print 'Iteration ' + str(iteration_step) + ': ' + str(num_removed_vertices) + ' vertices were removed'
+#                print 'Iteration ' + str(iteration_step) + ': ' + str(num_removed_vertices) + ' vertices were removed'
                 iteration_step += 1
         return self.clonal_tree
 

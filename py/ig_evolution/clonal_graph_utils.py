@@ -40,6 +40,11 @@ class ClonalGraph:
         self.aa_edges = dict()
         self.vertex_indices = set()
         self.num_edges = 0
+        for v in self.clonal_tree.VertexIter():
+            v_id = self.clonal_tree.GetSequenceByVertex(v).id
+            v_aa = self.aa_dict.GetAAById(v_id)
+            v_index = self.aa_dict.GetIndexByAA(v_aa)
+            self.vertex_indices.add(v_index)
         for e in self.clonal_tree.EdgeIter():
             self.num_edges += 1
             src_id = self.clonal_tree.GetSequenceByVertex(e[0]).id
@@ -48,8 +53,8 @@ class ClonalGraph:
             dst_aa = self.aa_dict.GetAAById(dst_id)
             src_index = self.aa_dict.GetIndexByAA(src_aa)
             dst_index = self.aa_dict.GetIndexByAA(dst_aa)
-            self.vertex_indices.add(src_index)
-            self.vertex_indices.add(dst_index)
+#            self.vertex_indices.add(src_index)
+#            self.vertex_indices.add(dst_index)
             if src_aa == dst_aa:
                 continue
             aa_edge = (src_index, dst_index)
@@ -171,16 +176,19 @@ class ClonalGraph:
     def OutputPutativeAASeqs(self, output_fname):
         v_gene, j_gene = self._GetDominantGenes()
         fh = open(output_fname, 'w')
-        fh.write('Index\tAA_seq\tAA_diversity\tOriginal_mults\tOriginal_headers\tOriginal_labels\tCDR1\tCDR2\tCDR3\tV_gene\tJ_gene\n')
+        fh.write('Index\tAA_seq\tNuclSeqs\tOriginal_mults\tOriginal_headers\tOriginal_labels\tCDR1\tCDR2\tCDR3\tV_gene\tJ_gene\tV_SHMs\tJ_SHMs\n')
         for aa in self.aa_dict:
             aa_ids = self.aa_dict.GetIdsByAA(aa)
             vertex_labels = self._GetAALabels(aa)
             nucl_mults = sorted([self.full_length_lineage.Dataset().GetSeqMultiplicity(seq_id) for seq_id in aa_ids], reverse = True)
+            v_shms = sorted([len(self.full_length_lineage.Dataset().GetVSHMsOutsideCDR3(seq_id)) for seq_id in aa_ids], reverse = True)
+            j_shms = sorted([len(self.full_length_lineage.Dataset().GetJSHMsOutsideCDR3(seq_id)) for seq_id in aa_ids], reverse = True)
+            nucls_seqs = [self.full_length_lineage.Dataset().GetSeqByName(seq_id).seq for seq_id in aa_ids]
             headers = ';'.join(aa_ids)
             cdr1 = aa[self.shms.cdr1_bounds[0] : self.shms.cdr1_bounds[1] + 1]
             cdr2 = aa[self.shms.cdr2_bounds[0] : self.shms.cdr2_bounds[1] + 1]
             cdr3 = aa[self.shms.cdr3_bounds[0] : self.shms.cdr3_bounds[1] + 1]
-            fh.write(str(self.aa_dict.GetIndexByAA(aa)) + '\t' + aa + '\t' + str(self.aa_dict.GetAAMultiplicity(aa)) + '\t' + ','.join([str(m) for m in nucl_mults]) + '\t' + headers + '\t' + ','.join(vertex_labels) + '\t' + cdr1 + '\t' + cdr2 + '\t' + cdr3 + '\t' + v_gene + '\t' + j_gene + '\n')
+            fh.write(str(self.aa_dict.GetIndexByAA(aa)) + '\t' + aa + '\t' + ','.join(nucls_seqs) + '\t' + ','.join([str(m) for m in nucl_mults]) + '\t' + headers + '\t' + ','.join(vertex_labels) + '\t' + cdr1 + '\t' + cdr2 + '\t' + cdr3 + '\t' + v_gene + '\t' + j_gene + '\t' + ','.join([str(n) for n in v_shms]) + '\t' + ','.join([str(n) for n in j_shms]) + '\n')
         fh.close()
 
     def _PositionIsInCDRs(self, aa_pos):
@@ -384,9 +392,9 @@ def OutputCompressedGraph(clonal_graph, compressed_paths, output_base):
     os.system('dot -Tsvg ' + output_base + '.dot' + ' -o ' + output_base + '.svg')
 
 ############################################################################################
-def DefineClonalGraphName(clonal_graph, lineage_id):
+def DefineClonalGraphName(clonal_graph, lineage_id, comp_frac):
     splits = lineage_id.split('_')
-    return splits[0] + '_vertices' + str(clonal_graph.NumVertices()) + '_edges' + str(clonal_graph.NumEdges())
+    return splits[0] + '_vertices' + str(clonal_graph.NumVertices()) + '_edges' + str(clonal_graph.NumEdges()) + '_cfrac' + '{:0.2f}'.format(comp_frac)
 
 def OutputAbundantAAGraphs(full_length_lineages, output_dirs, config):
     for l in sorted(full_length_lineages, key = lambda s : len(s), reverse = True):
@@ -394,22 +402,24 @@ def OutputAbundantAAGraphs(full_length_lineages, output_dirs, config):
             continue
         # clonal tree construction step
         print "== Processing lineage " + l.id() + '...'
-        custom_filter = clonal_tree_constructor.CustomFilter([clonal_tree_constructor.AbundantLengthFilter(l), clonal_tree_constructor.NaiveSequenceFilter(l)]) 
+        custom_filter = clonal_tree_constructor.CustomFilter([clonal_tree_constructor.AbundantLengthFilter(l), clonal_tree_constructor.AbundantVJFilter(l)]) #, clonal_tree_constructor.NaiveSequenceFilter(l)]) 
         seq_iterator = clonal_tree_constructor.AllSequenceIterator(l) #clonal_tree_constructor.AbundantSequenceIterator(l, 5) 
         edge_computer = clonal_tree_constructor.HGToolEdgeComputer(output_dirs['fl_lineages'], 'build/release/bin/./ig_swgraph_construct', config.hg_tau) # TODO: refactor
         tree_computer = mst_algorithms.VertexMultMSTFinder(l) #mst_algorithms.IGraphMSTFinder() # mst_algorithms.VertexMultMSTFinder(l)
         tree_constructor = clonal_tree_constructor.ClonalTreeConstructor(l, seq_iterator, custom_filter, edge_computer, tree_computer, config.min_graph_size, config.min_component_fraction)
         clonal_trees = tree_constructor.GetClonalTrees()
+        comp_fractions = tree_constructor.GetComponentFractions()
         if len(clonal_trees) == 0:
             continue
         clonal_tree = clonal_trees[0]
+        comp_fraction = comp_fractions[0]
 #        PrintAbundantSequences(l)
         # writing clonal tree
-        #stats_writer = clonal_tree_stats.ClonalTreeStatsWriter(clonal_tree)
-        #stats_writer.Output(os.path.join(output_dirs['clonal_graphs'], l.id() + '_before_simpl.txt'))
+        stats_writer = clonal_tree_stats.ClonalTreeStatsWriter(clonal_tree)
+        stats_writer.Output(os.path.join(output_dirs['clonal_graphs'], l.id() + '_before_simpl.txt'))
         #OutputClonalTree(clonal_tree, l, os.path.join(output_dirs['clonal_graphs'], l.id() + '_before_simpl'), clonal_tree_writer.LevelMultiplicityVertexWriter(clonal_tree))
         # simplification step
-        print "# vertices before simplification: " + str(clonal_tree.NumVertices())
+#        print "# vertices before simplification: " + str(clonal_tree.NumVertices())
         leaf_filters = [clonal_tree_simplification.LowFixedAbundanceLeafRemover(clonal_tree, config.min_abs_abundance), clonal_tree_simplification.RelativeAbundanceLeafRemover(clonal_tree, config.max_rel_abundance)]
         leaf_remover = clonal_tree_simplification.IterativeTipRemover(clonal_tree, leaf_filters)
         cleaned_tree = leaf_remover.CleanTips()
@@ -423,9 +433,9 @@ def OutputAbundantAAGraphs(full_length_lineages, output_dirs, config):
         #OutputClonalTree(cleaned_tree, l, os.path.join(output_dirs['clonal_graphs'], l.id() + '_nucl_tree'), clonal_tree_writer.UniqueAAColorWriter(cleaned_tree))
         # aa graph
         clonal_graph = ClonalGraph(clonal_tree)
-        if clonal_graph.NumVertices() == 0:
+        if clonal_graph.NumVertices() < config.min_graph_size:
             continue
-        graph_name = DefineClonalGraphName(clonal_graph, l.id())
+        graph_name = DefineClonalGraphName(clonal_graph, l.id(), comp_fraction)
         clonal_graph.OutputGraphSHMsToTxt(os.path.join(output_dirs['clonal_graphs'], graph_name + '_shms.txt'))
         clonal_graph.OutputPutativeAASeqs(os.path.join(output_dirs['clonal_graphs'], graph_name + '_seqs.txt'))
         clonal_graph.OutputGraphSHMsAsMatrix(clonal_graph_algorithms.DFSVertexOrderFinder(clonal_graph), os.path.join(output_dirs['shm_matrix'], graph_name))
@@ -437,9 +447,9 @@ def OutputAbundantAAGraphs(full_length_lineages, output_dirs, config):
         writer = clonal_tree_writer.ClonalGraphVisualizer(clonal_graph, vertex_mult_writer, edge_writer)
         writer.Output(os.path.join(output_dirs['coloring_mult'], graph_name))
         # diversity writing
-        vertex_div_writer = clonal_tree_writer.DiversityVertexWriter(clonal_graph)
-        writer = clonal_tree_writer.ClonalGraphVisualizer(clonal_graph, vertex_div_writer, edge_writer)
-        writer.Output(os.path.join(output_dirs['coloring_div'], graph_name))
+#        vertex_div_writer = clonal_tree_writer.DiversityVertexWriter(clonal_graph)
+#        writer = clonal_tree_writer.ClonalGraphVisualizer(clonal_graph, vertex_div_writer, edge_writer)
+#        writer.Output(os.path.join(output_dirs['coloring_div'], graph_name))
         # label writing
         vertex_label_writer = clonal_tree_writer.LabelVertexWriter(clonal_graph)
         writer = clonal_tree_writer.ClonalGraphVisualizer(clonal_graph, vertex_label_writer, edge_writer)
@@ -449,6 +459,6 @@ def OutputAbundantAAGraphs(full_length_lineages, output_dirs, config):
         compressed_paths = compressor.CompressGraph()
         OutputCompressedGraph(clonal_graph, compressed_paths, os.path.join(output_dirs['compressed'], graph_name))
         # SHM visualization
-        shm_writer = shm_visualizer.SHMVisualizer(clonal_graph)
-        shm_dir = os.path.join(output_dirs['position_shms'], graph_name)
-        shm_writer.OutputSHMsPerPosition(shm_dir)
+#        shm_writer = shm_visualizer.SHMVisualizer(clonal_graph)
+#        shm_dir = os.path.join(output_dirs['position_shms'], graph_name)
+#        shm_writer.OutputSHMsPerPosition(shm_dir)

@@ -29,6 +29,15 @@ def StringHasPrefix(str, prefix):
 def LineIsQuery(line):
     return StringHasPrefix(line, '# Query:')
 
+def GetChain(seq_id):
+    chain_dict = {'IGHV' : 'VH', 'IGKV' : 'VK', 'IGLV' : 'VL'}
+    for v in chain_dict:
+        if seq_id.find(v) != -1:
+            return chain_dict[v]
+    print "ERROR: unknown chain " + seq_id
+    sys.exit(1)
+    return ''
+
 input_txt = sys.argv[1]
 output_fname = sys.argv[2]
 
@@ -60,5 +69,5 @@ for b in blocks:
     for r in b:
         bounds = b.GetBoundsByRegion(r)
         output_fh.write(str(bounds[0]) + '\t' + str(bounds[1]) + '\t')
-    output_fh.write('VH\t0\n')
+    output_fh.write(GetChain(b.query) + '\t0\n')
 output_fh.close()

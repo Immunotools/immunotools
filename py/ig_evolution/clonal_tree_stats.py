@@ -23,5 +23,11 @@ class ClonalTreeStatsWriter:
             src_mult = self.directed_clonal_tree.Dataset().GetSeqMultiplicity(src_id)
             dst_mult = self.directed_clonal_tree.Dataset().GetSeqMultiplicity(dst_id)
             fh.write(src_id + '\t' + dst_id + '\t' + str(src_mult) + '\t' + str(dst_mult) + '\t' + edge_stats.edge_type.name + '\t' + str(edge_stats.NumReversedV()) + '\t' + str(edge_stats.NumAddedV()) + '\t' + str(edge_stats.NumReversedJ()) + '\t' + str(edge_stats.NumAddedJ()) + '\t' + str(edge_stats.NumCDR3SHMs()) + '\n')
+        if self.directed_clonal_tree.NumVertices() == 1:
+            v_id = ''
+            for v in self.directed_clonal_tree.VertexIter():
+                v_id = self.directed_clonal_tree.GetSequenceByVertex(v).id
+            v_mult = self.directed_clonal_tree.Dataset().GetSeqMultiplicity(v_id)
+            fh.write(v_id + '\tNA\t' + str(v_mult) + '\tNA\tNA\tNA\tNA\tNA\tNA\tNA\n')
         fh.close()
         

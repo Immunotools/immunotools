@@ -1,6 +1,7 @@
 import os
 import sys
 import shutil
+from collections import Counter
 
 from Bio import SeqIO
 from Bio.Seq import Seq
@@ -25,13 +26,12 @@ class VJGeneAnnotator:
 
     def _FindMostAbundantGene(self, gene_type):
         gene_dict = dict() # gene name -> num sequences
+        genes = []
         for seq in self.full_length_lineage.FullLengthSeqIdIter(): 
             gene_name = self.full_length_lineage.Dataset().GetGeneHitBySeqName(seq.id, gene_type)
             base_gene = utils.GetBaseGeneName(gene_name)
-            if base_gene not in gene_dict:
-                gene_dict[base_gene] = 0
-            gene_dict[base_gene] += 1
-        self.gene_type_mults[gene_type] = gene_dict
+            genes.append(base_gene)
+        self.gene_type_mults[gene_type] = Counter(genes)
 
     def RealignmentIsNeeded(self):
         for gene_type in self.gene_type_mults:
@@ -40,7 +40,9 @@ class VJGeneAnnotator:
         return False
 
     def GetAbundantGene(self, gene_type):
-        return self.gene_type_mults[gene_type].keys()[0]
+        for gene in sorted(self.gene_type_mults[gene_type], key = lambda x : self.gene_type_mults[gene_type][x], reverse = True):
+            return gene
+        return ''
 
 class VJUsageAnalyzer:
     def __init__(self):

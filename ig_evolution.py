@@ -80,16 +80,24 @@ class AlgorithmConfig:
         self.max_lineage_size = sys.maxint
         self.hg_tau = 10
         self.min_component_fraction = 0.7
+        self.perc_cdr3_identity = 90
         self.divan_dir = ''
         self.output_dir = ''
         self.remove_aux_files = True
         self._ParseArgs(args)
+        self._PrintArgs()
+
+    def _PrintArgs(self):
+        print "==== IgEvolution parameters:"
+        print "Min relative (absolute) vertex abundance: " + str(self.max_rel_abundance) + ' (' + str(self.min_abs_abundance) + ')'
+        print "Min lineage (graph) size: " + str(self.min_lineage_size) + ' (' + str(self.min_graph_size) + ')'
+        print "Hamming graph TAU: " + str(self.hg_tau) 
 
     def _ParseArgs(self, args):
         try:
             options, remainder = getopt.getopt(args[1:], 'i:o:', ["parse-mults", 'min-lineage=', 'max-lineage=', 'min-abs=',
                                                                   'min-rel=', 'hg-tau=', 'min-graph=', 'help',
-                                                                  'skip-err-corr', 'keep-aux-files', 'all'])
+                                                                  'skip-err-corr', 'keep-aux-files', 'all', 'cdr3-pi=', 'min-comp-fr='])
         except getopt.GetoptError as err:
             print str(err)  # will print something like "option -a not recognized"
             sys.exit(2)
@@ -117,6 +125,10 @@ class AlgorithmConfig:
                 self.max_rel_abundance = 0
             elif opt == '--keep-aux-files':
                 self.remove_aux_files = False
+            elif opt == '--cdr3-pi':
+                self.perc_cdr3_identity = float(arg)
+            elif opt == '--min-comp-fr':
+                self.min_component_fraction = float(arg)
             elif opt == '--all':
                 self.min_graph_size = 1
                 self.min_lineage_size = 1
@@ -147,7 +159,7 @@ def main(argv):
     dataset_info = dataset.DatasetInfo('test1', 'time_point1', 1, 'cell_type1')
     dataset_obj = dataset.Dataset(dataset_info, divan_test_dir, config.parse_headers)
 
-    cdr3_lineage_constructor = cdr3_clonal_lineage.CDR3LineageConstructor(dataset_obj, output_dirs)
+    cdr3_lineage_constructor = cdr3_clonal_lineage.CDR3LineageConstructor(dataset_obj, output_dirs, config.perc_cdr3_identity)
     cdr3_lineages = cdr3_lineage_constructor.Construct()
 
     full_length_lineages = []
@@ -162,7 +174,7 @@ def main(argv):
     clonal_graph_utils.OutputAbundantAAGraphs(full_length_lineages, output_dirs, config)
 
     print "Compiling HTML report..."
-    dir_dict = {'labels' : output_dirs['coloring_label'], 'multiplicity' : output_dirs['coloring_mult'], 'diversity' : output_dirs['coloring_div'], 'compressed' : output_dirs['compressed'], 'shm_matrix' : output_dirs['shm_matrix'], 'shm_plot' : output_dirs['shm_plot']}
+    dir_dict = {'labels' : output_dirs['coloring_label'], 'multiplicity' : output_dirs['coloring_mult'], 'compressed' : output_dirs['compressed'], 'shm_matrix' : output_dirs['shm_matrix'], 'shm_plot' : output_dirs['shm_plot']}
     html = html_writer.HTMLWriter(os.path.basename(output_dirs['clonal_graphs']), dir_dict, '.svg', ['shm_matrix', 'shm_plot'])
     html.CreateHTMLReports(output_dirs['htmls'])
 

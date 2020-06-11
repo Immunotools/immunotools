@@ -220,6 +220,7 @@ class ClonalTreeConstructor:
         self.min_tree_size = min_tree_size
         self.min_component_frac = min_component_frac
         self.clonal_trees = []
+        self.comp_fractions = []
         self._ProcessLineage()
 
     def _ProcessLineage(self):
@@ -245,7 +246,10 @@ class ClonalTreeConstructor:
             root_finder = clonal_tree_utils.SimpleRootComputer(undirected_tree)
             directed_tree = clonal_tree_utils.DirectedClonalTree(undirected_tree, root_finder.GetRoot())
             self.clonal_trees.append(directed_tree)
+            self.comp_fractions.append(component_fraction)
 
     def GetClonalTrees(self):
         return self.clonal_trees
 
+    def GetComponentFractions(self):
+        return self.comp_fractions

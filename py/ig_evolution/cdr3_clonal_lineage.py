@@ -164,9 +164,15 @@ class CDR3LineageStorage:
         return len(self.lineages)
 
 class CDR3LineageConstructor:
-    def __init__(self, dataset, output_dirs):
+    def __init__(self, dataset, output_dirs, perc_cdr3_identity):
+        print "== CDR3 lineage constructor starts"
         self.dataset = dataset
         self.output_dir = output_dirs['main_dir']
+        self.perc_cdr3_identity = perc_cdr3_identity
+        self.length_level = 30
+        self.length_tau = int(float(100 - self.perc_cdr3_identity) / 100 * self.length_level)
+        print "CDR3 percent identity: " + str(self.perc_cdr3_identity)
+        print "Starting CDR3 tau: " + str(self.length_tau)
         # output files and dirs
         self.cdr3_fasta_dir = output_dirs['cdr3_fasta_dir'] #os.path.join(self.output_dir, 'cdr3_fasta')
         self.cdr3_graph_dir = output_dirs['cdr3_graph_dir'] #os.path.join(self.output_dir, 'cdr3_graphs')
@@ -195,8 +201,6 @@ class CDR3LineageConstructor:
 
     def _OutputCDR3sByLengthLevels(self):
         print "Writing CDR3s to FASTA files according to their lengths"
-        length_level = 30
-        length_tau = 3
         cdr_length_dict = dict()
         self.cdr3_index_map = dict() # index of CDR3 in FASTA -> index of CDR3 in dataset
         cdr3_index = 0
@@ -209,17 +213,17 @@ class CDR3LineageConstructor:
             if cdr3_length not in cdr_length_dict:
                 cdr_length_dict[cdr3_length] = []
             cdr_length_dict[cdr3_length].append(i)
-        start_level = min(cdr_length_dict.keys()) / length_level * length_level
-        end_level = (max(cdr_length_dict.keys()) / length_level + 1) * length_level
-        levels = range(start_level, end_level, length_level)
+        start_level = min(cdr_length_dict.keys()) / self.length_level * self.length_level
+        end_level = (max(cdr_length_dict.keys()) / self.length_level + 1) * self.length_level
+        levels = range(start_level, end_level, self.length_level)
         fhandler_dict = dict()
         self.file_distance_dict = dict()
         for l in levels:
-            fname = os.path.join(self.cdr3_fasta_dir, "cdr3s_" + str(l) + '_' + str(l + length_level) + '.fasta')
-            self.file_distance_dict[fname] = (l / length_level + 1) * length_tau
+            fname = os.path.join(self.cdr3_fasta_dir, "cdr3s_" + str(l) + '_' + str(l + self.length_level) + '.fasta')
+            self.file_distance_dict[fname] = (l / self.length_level + 1) * self.length_tau
             fhandler_dict[l] = open(fname, 'w')
         for cdr3_len in sorted(cdr_length_dict):
-            cdr3_len_level = cdr3_len / length_level * length_level
+            cdr3_len_level = cdr3_len / self.length_level * self.length_level
             fh = fhandler_dict[cdr3_len_level]
             for cdr3_index in cdr_length_dict[cdr3_len]:
                 fh.write('>INDEX:' + str(cdr3_index) + '|MULT:' + str(self.dataset.GetCDR3Multiplicity(cdr3_index)) + '\n')

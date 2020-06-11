@@ -46,7 +46,7 @@ def GetDDict(d_records):
     for r in d_records:
         if r.seq in processed_seqs:
             continue
-        basename = r.id.split('*')[0]
+        basename = r.id #r.id.split('*')[0]
         if basename not in d_dict:
             d_dict[basename] = []
         d_dict[basename].append(r.seq)
@@ -57,7 +57,7 @@ def CreateDOrder(d_genes):
     processed_seqs = set()
     ordered_basenames = []
     for i in range(len(d_genes)):
-        basename = d_genes[i].id.split('*')[0]
+        basename = d_genes[i].id #d_genes[i].id.split('*')[0]
         if basename in ordered_basenames:
             continue
         if d_genes[i].seq in processed_seqs:
@@ -134,7 +134,8 @@ class SimpleTandem:
         return self.d1_seq == ''
 
     def DD(self):
-        return (self.d1_name.split('*')[0], self.d2_name.split('*')[0])
+        return (self.d1_name, self.d2_name)
+        #return (self.d1_name.split('*')[0], self.d2_name.split('*')[0])
 
     def Seq(self):
         return self.d1_seq + self.ins + self.d2_seq
@@ -167,6 +168,7 @@ def AnalyzeSimpleTandems(dd_dict, cdr3):
 
 ############################################
 def OutputDDMatrix(ordered_ds, dd_usage, output_fname):
+    print ordered_ds
     matrix = []
     annot_matrix = []
     for d in ordered_ds:
@@ -208,7 +210,7 @@ class SingleDMatch:
         self.d_seq = d_seq
 
     def D(self):
-        return self.d_name.split('*')[0]
+        return self.d_name #self.d_name.split('*')[0]
 
     def Seq(self):
         return self.d_seq
@@ -491,13 +493,15 @@ def main(d_fasta, cdr3_fasta, output_dir, min_k):
     for d in single_usage:
         OutputDCoverage(d, d_dict[d], single_usage[d], os.path.join(single_output_dir, 'single_' + d + '.pdf'))
     output_fh = open(os.path.join(output_dir, 'd_labeling.txt'), 'w')
-    output_fh.write('CDR3\tD_match\tLeft_ins\tRight_ins\n')
+    output_fh.write('CDR3_name\tCDR3_seq\tD_name\tD_match\tLeft_ins\tRight_ins\n')
     for d in single_usage:
         for cdr3 in single_usage[d]:
             cdr3_seq = cdr3.cdr3.seq
+            cdr3_name = cdr3.cdr3.id
+            d_name = cdr3.single_d_match.D()
             d_match = cdr3.single_d_match.Seq()
             d_start = cdr3.cdr3.seq.find(d_match)
-            output_fh.write(cdr3_seq + '\t' + d_match + '\t' + cdr3_seq[ : d_start] + '\t' + cdr3_seq[d_start + len(d_match) : ] + '\n')
+            output_fh.write(cdr3_name + '\t' + cdr3_seq + '\t' + d_name + '\t' + d_match + '\t' + cdr3_seq[ : d_start] + '\t' + cdr3_seq[d_start + len(d_match) : ] + '\n')
     output_fh.close() 
 
     # tandem usage
