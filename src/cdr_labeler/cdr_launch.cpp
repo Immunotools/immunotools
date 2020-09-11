@@ -52,7 +52,6 @@ namespace cdr_labeler {
         writer.OutputVGeneAlignment();
         writer.OutputSHMs();
         writer.OutputFilteringInfo();
-        return;
         INFO("Diversity analysis of CDRs");
         DiversityAnalyser cdr_analyser(annotated_clone_set, config_.input_params,
                                        config_.output_params,
@@ -66,5 +65,6 @@ namespace cdr_labeler {
         INFO("Clonal Shannon index: " << cdr_analyser.ClonalShannonIndex());
         INFO("Clonal Simpson index: " << cdr_analyser.ClonalSimpsonIndex());
         INFO("Diversity Analyzer ends");
+        return;
     }
 }
