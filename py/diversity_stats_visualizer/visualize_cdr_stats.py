@@ -96,7 +96,7 @@ def visualize_largest_region_nucls(labeling_df, region, region_name, output_fnam
     if len(max_group) == 0:
         return
     nucl_dict = get_nucls_lists(max_group)
-    x = range(0, len(max_group[0]))
+    x = np.array(range(0, len(max_group[0])))
     x_l = [str(i) for i in range(1, len(max_group[0]) + 1)]
     acgt = nucl_dict['A'] + nucl_dict['C'] + nucl_dict['G'] + nucl_dict['T']
     cgt = nucl_dict['C'] + nucl_dict['G'] + nucl_dict['T']
@@ -134,9 +134,9 @@ def visualize_largest_group_aa_variability(labeling_df, region, region_name, out
         return
     group_len = len(max_group[0])
     if group_len % 3 != 0:
-        print "Largest " + region_name + " is not out-of-frame"
+        print("Largest " + region_name + " is not out-of-frame")
         return
-    aa_len = group_len / 3 
+    aa_len = group_len // 3 
     aa_seqs = [Seq(cdr).translate(to_stop=True) for cdr in max_group]
     aa_dict = {'Position' : [], 'Hidrophobicity' : []}
     for aa_seq in aa_seqs:
@@ -188,7 +188,7 @@ def main(df_fname, output_config):
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print "Invalid input parameters"
-        print "python visualize_cdr_stats.py cdr_details.txt output_config"
+        print("Invalid input parameters")
+        print("python visualize_cdr_stats.py cdr_details.txt output_config")
         sys.exit(1)
     main(sys.argv[1], sys.argv[2])

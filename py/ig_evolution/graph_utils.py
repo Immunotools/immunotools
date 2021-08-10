@@ -1,7 +1,7 @@
 import os
 import sys
 import shutil
-import Queue
+import queue as Queue
 from Bio import SeqIO
 import operator
 
@@ -47,7 +47,8 @@ class Graph:
             self.edges[i - 1] = []
             self.edge_weights[i - 1] = []
             splits = lines[i].strip().split()
-            for j in range(0, len(splits) / 2):
+            num_edges = len(splits) / 2
+            for j in range(0, int(num_edges)):
                 self.edges[i - 1].append(int(splits[j * 2]) - 1)
                 self.edge_weights[i - 1].append(int(splits[j * 2 + 1]))
                 self.num_edges += 1

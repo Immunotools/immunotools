@@ -48,10 +48,10 @@ class HTMLReportWriter:
         if len(values) == 0:
             return
         if len(row_names) != len(values):
-            print "# rows in table and # row names are not consistent"
+            print("# rows in table and # row names are not consistent")
             sys.exit(1)
         if len(col_names) != len(values[0]):
-            print "# columns in table and # column names are not consistent"
+            print("# columns in table and # column names are not consistent")
             sys.exit(1)
         self.fhandler.write("<table width = " + str(width) + "% align = center>\n")
         header_row = [""]
@@ -269,7 +269,7 @@ def main(vj_df_fname, shm_df_fname, output_config):
 if __name__ == "__main__":
     warnings.filterwarnings('ignore')
     if len(sys.argv) != 4:
-        print "Invalid input"
-        print "python html_report_writer.py cdr_details.txt shm_details.txt output_config"
+        print("Invalid input")
+        print("python html_report_writer.py cdr_details.txt shm_details.txt output_config")
         sys.exit(1)
     main(sys.argv[1], sys.argv[2], sys.argv[3])

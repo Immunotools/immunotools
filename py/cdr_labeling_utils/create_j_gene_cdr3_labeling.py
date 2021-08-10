@@ -13,6 +13,6 @@ for r in SeqIO.parse(gene_fasta, 'fasta'):
 output_fh = open(output_fname, 'w')
 cons_seq = 'tggggc'
 for gene in aligned_genes:
-    w_pos = gene.seq.find(cons_seq)
+    w_pos = gene.seq.lower().find(cons_seq)
     output_fh.write(gene.id + '\t' + str(w_pos) + '\t' + str(w_pos + 1) + '\n')
 output_fh.close()

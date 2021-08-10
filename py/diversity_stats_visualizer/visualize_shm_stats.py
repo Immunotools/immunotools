@@ -16,7 +16,7 @@ class AlignedRead:
     def _parse_line(self, line):
         splits = line.split()
         if len(splits) != 6:
-            print "Header line " + line + " is not valid"
+            print("Header line " + line + " is not valid")
             sys.exit(1)
         self.read_name = splits[0][len("Read_name:"):]
         self.read_len = int(splits[1][len("Read_length:"):])
@@ -41,7 +41,7 @@ class SHM:
     def __init__(self, line):
         splits = line.split()
         if len(splits) != 9:
-            print "Invalid SHM line " + line
+            print("Invalid SHM line " + line)
         self.type = splits[0]
         self.read_pos = int(splits[1])
         self.gene_pos = int(splits[2])
@@ -416,7 +416,7 @@ def main(shm_df_fname, output_config):
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
-        print "Invalid input parameters"
-        print "python visualize_shm_stats.py shm_df.txt output_config"
+        print("Invalid input parameters")
+        print("python visualize_shm_stats.py shm_df.txt output_config")
         sys.exit(1)
     main(sys.argv[1], sys.argv[2])

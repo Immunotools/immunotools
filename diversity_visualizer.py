@@ -37,7 +37,7 @@ class VisualizerConfig:
 
 def CheckInputDirFatal(input_dir):
     if not os.path.isdir(input_dir):
-        print "ERROR: " + input_dir + " is not a directory"
+        print("ERROR: " + input_dir + " is not a directory")
         sys.exit(1)
 
 def CreateOutputDir(divan_dir, vis_dir = ""):
@@ -99,8 +99,8 @@ def main(input_dir, output_dir, output_log):
 
 if __name__ == '__main__':
     if len(sys.argv) not in [2, 3]:
-        print "Invalid input arguments"
-        print "python diversity_visualizer.py diversity_analyzer_dir"
+        print("Invalid input arguments")
+        print("python diversity_visualizer.py diversity_analyzer_dir")
         sys.exit(1)
     diversity_analyzer_dir = sys.argv[1]
     output_dir = ""

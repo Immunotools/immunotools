@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -42,7 +42,7 @@ def LociParamIsIg(loci_str):
 
 organism_dict = {'human' : 'human', 'mouse' : 'mouse', 'rat' : 'rat',
                  'rabbit' : 'rabbit', 'rhesus-monkey' : 'rhesus_monkey',
-                 'cattle' : 'cattle', 'RM' : 'RM'}
+                 'cattle' : 'cattle', 'RM' : 'RM', 'RM-Bernat' : 'RM_Bernat'}
 
 def OrganismParamCorrect(org_str):
     return org_str in organism_dict
@@ -211,7 +211,7 @@ def main(argv):
                                type=str,
                                default="human",
                                dest="organism",
-                               help="Organism: human, mouse, rat, rabbit, rhesus-monkey, cattle [default: %(default)s]")
+                               help="Organism: human, mouse, rat, rabbit, rhesus-monkey (for IMGT database), RM-Bernat (for the database by Bernat et al, Immunity, 2021), cattle [default: %(default)s]")
 
     optional_args.add_argument('--skip-plots',
                                action='store_const',
@@ -254,7 +254,7 @@ def main(argv):
     log.info("Log will be written to " + params.log_filename + "\n")
 
     PrepareConfigs(params, log)
-    print params.skip_plots
+#    print(params.skip_plots)
     try:
         cdr_command_line = run_cdr_labeler + " " + params.cdr_labeler_config_file
         support.sys_call(cdr_command_line, log)

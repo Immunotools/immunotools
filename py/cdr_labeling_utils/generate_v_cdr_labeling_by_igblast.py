@@ -34,7 +34,7 @@ def GetChain(seq_id):
     for v in chain_dict:
         if seq_id.find(v) != -1:
             return chain_dict[v]
-    print "ERROR: unknown chain " + seq_id
+    print("ERROR: unknown chain " + seq_id)
     sys.exit(1)
     return ''
 
@@ -60,8 +60,8 @@ for l in open(input_txt).readlines():
 blocks.append(cur_block)
 
 for b in blocks:
-    print b
-print len(blocks)
+    print(b)
+print(len(blocks))
 
 output_fh = open(output_fname, 'w')
 for b in blocks:
