@@ -66,6 +66,8 @@ class VJMatrix:
 
     def OutputHeatmap(self, output_fname, log):
         plt.figure(figsize = (10, 15))
+        if len(self.abundant_vj_matrix) == 0:
+            return
         sns.heatmap(np.array(self.abundant_vj_matrix), xticklabels = self.sorted_js, yticklabels = self.used_vs, cmap = 'jet')
         plt.yticks(rotation = 0, fontsize = 10)
         plt.xticks(rotation = 90, fontsize = 10)
