@@ -101,13 +101,13 @@ def PrepareOutputDir(output_dir):
 def ParseOptions(sys_args):
     input_config = InputConfig()
     try:
-        options, remainder = getopt.getopt(sys_args[1:], 'c:o:', ["parse-mult"])
+        options, remainder = getopt.getopt(sys_args[1:], 'i:o:', ["parse-mult"])
     except getopt.GetoptError as err:
         print str(err)  # will print something like "option -a not recognized"
         sys.exit(2)
     print options, remainder
     for opt, arg in options:
-        if opt == "-c":
+        if opt == "-i":
             input_config.config_fname = arg
         elif opt == '-o':
             input_config.output_dir = arg
@@ -228,7 +228,7 @@ class CombinedDataWriter:
  
 def main(args):
     config = ParseOptions(args)
-    config_df = pd.read_table(config.config_fname, delim_whitespace = True)
+    config_df = pd.read_csv(config.config_fname, delim_whitespace = True)
     PrepareOutputDir(config.output_dir)
 
     divan_dirs = []

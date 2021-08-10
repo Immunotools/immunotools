@@ -58,7 +58,7 @@ class Dataset:
         print "  Reading " + self.config.full_len_seq + '...'
         self.fl_seq_storage = SeqStorage(self.config.full_len_seq, self.parse_headers)
         print '  ' + str(len(self.fl_seq_storage)) + ' out of ' + str(self.fl_seq_storage.NumOriginalSequences()) + ' full-length sequences are distinct'
-        self.label_collection = Labels('Greens')
+        self.label_collection = Labels('tab20')
         for seq_id in self.fl_seq_storage:
             cur_labels = self.fl_seq_storage.GetSequenceLabels(seq_id)
             self.label_collection.AddLabel(cur_labels)

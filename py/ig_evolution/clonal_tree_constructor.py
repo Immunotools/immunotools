@@ -167,7 +167,7 @@ class HGToolEdgeComputer:
         if not os.path.exists(self.output_dir):
             os.mkdir(self.output_dir)
         # algorithm params
-        self.hg_tau = 10
+        self.hg_tau = hg_tau
 
     def ComputeEdges(self, seqs):
 #        print "# sequences: " + str(len(seqs))
@@ -191,7 +191,7 @@ class HGToolEdgeComputer:
         fasta_fh.close()
 
     def _ConstructHG(self, fasta_fname, graph_fname):
-        os.system(self.hg_running_line + ' -i ' + fasta_fname + ' -o ' + graph_fname + ' -k 20 --tau ' + str(self.hg_tau) + ' -T 0 -t 32 > /dev/null') # todo: refactor parameters
+        os.system(self.hg_running_line + ' -i ' + fasta_fname + ' -o ' + graph_fname + ' -k 10 --tau ' + str(self.hg_tau) + ' -T 0 -t 32 > /dev/null') # todo: refactor parameters
         return graph_utils.Graph(graph_fname)
 
     def _GetLargestConnectedComponent(self, graph):

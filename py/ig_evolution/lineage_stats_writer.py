@@ -1,4 +1,8 @@
 import sys
+
+from Bio.SeqRecord import SeqRecord
+from Bio.Seq import Seq
+
 import utils
 import dataset
 import vj_annotator
@@ -15,16 +19,27 @@ class ClonalLineageStatWriter:
         return len([seq for seq in lineage.FullLengthSeqIdIter() if self.dataset.GetSeqMultiplicity(seq.id) > 1])
 
     def _GetRootSeq(self, lineage, abundant_v):
-        num_shms = sys.maxint
-        root_seq = ''
+        num_shms_all = sys.maxint
+        root_seq_all = SeqRecord(Seq(''), id = '')
+        num_shms_prod = sys.maxint
+        root_seq_prod = SeqRecord(Seq(''), id = '')
         for seq in lineage.FullLengthSeqIdIter():
             if utils.GetBaseGeneName(self.dataset.GetGeneHitBySeqName(seq.id, dataset.AnnotatedGene.V)) != abundant_v:
                 continue
             cur_num_shms = len(self.dataset.GetVSHMsOutsideCDR3(seq.id)) + len(self.dataset.GetJSHMsOutsideCDR3(seq.id))
-            if cur_num_shms < num_shms:
-                num_shms = cur_num_shms
-                root_seq = seq
-        return root_seq
+            if cur_num_shms < num_shms_all:
+                num_shms_all = cur_num_shms
+                root_seq_all = seq
+            cur_seq = seq.seq #self.dataset.GetCDR3BySeqName(seq.id)
+            aa_seq = str(Seq(cur_seq).translate())
+            if aa_seq.find('*') != -1:
+                continue
+            if cur_num_shms < num_shms_prod:
+                num_shms_prod = cur_num_shms
+                root_seq_prod = seq
+        if root_seq_prod.id != '':
+            return root_seq_prod
+        return root_seq_all
 
     def OutputStats(self, output_fname):
         fh = open(output_fname, 'w')

@@ -32,6 +32,11 @@ class FullLengthClonalLineage:
     def CDR3Iter(self):
         return self.cdr3_lineage.CDR3Iter()
 
+    def CDR3Length(self):
+        for cdr3 in self.CDR3Iter():
+            return len(cdr3)
+        return -1
+
     def FullLengthSeqIdIter(self):
         return self.cdr3_lineage.FullLengthIter()
 

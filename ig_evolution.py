@@ -34,8 +34,8 @@ def PrepareOutputDirs(output_dir):
     utils.PrepareOutputDir(output_dirs['coloring_label'])
     output_dirs['coloring_mult'] = os.path.join(output_dirs['clonal_graphs'], 'multiplicity')
     utils.PrepareOutputDir(output_dirs['coloring_mult'])    
-    output_dirs['coloring_div'] = os.path.join(output_dirs['clonal_graphs'], 'diversity')
-    utils.PrepareOutputDir(output_dirs['coloring_div'])
+    output_dirs['coloring_shm'] = os.path.join(output_dirs['clonal_graphs'], 'shm_depth')
+    utils.PrepareOutputDir(output_dirs['coloring_shm'])
     output_dirs['compressed'] = os.path.join(output_dirs['clonal_graphs'], 'compressed')
     utils.PrepareOutputDir(output_dirs['compressed'])
     output_dirs['shm_matrix'] = os.path.join(output_dirs['clonal_graphs'], 'shm_matrix')
@@ -78,11 +78,13 @@ class AlgorithmConfig:
         self.parse_headers = False
         self.min_lineage_size = 100
         self.max_lineage_size = sys.maxint
-        self.hg_tau = 10
-        self.min_component_fraction = 0.7
+        self.hg_tau = 30
+        self.min_component_fraction = 0.0
         self.perc_cdr3_identity = 90
+        self.min_cdr3_len = 10
         self.divan_dir = ''
         self.output_dir = ''
+        self.num_lineages = sys.maxint
         self.remove_aux_files = True
         self._ParseArgs(args)
         self._PrintArgs()
@@ -95,9 +97,9 @@ class AlgorithmConfig:
 
     def _ParseArgs(self, args):
         try:
-            options, remainder = getopt.getopt(args[1:], 'i:o:', ["parse-mults", 'min-lineage=', 'max-lineage=', 'min-abs=',
-                                                                  'min-rel=', 'hg-tau=', 'min-graph=', 'help',
-                                                                  'skip-err-corr', 'keep-aux-files', 'all', 'cdr3-pi=', 'min-comp-fr='])
+            options, remainder = getopt.getopt(args[1:], 'i:o:n:', ["parse-mults", 'min-lineage=', 'max-lineage=', 'min-abs=',
+                                                                  'min-rel=', 'hg-tau=', 'min-graph=', 'help', 'num-lineages=',
+                                                                  'skip-err-corr', 'keep-aux-files', 'all', 'cdr3-pi=', 'min-comp-fr=', 'min-cdr3='])
         except getopt.GetoptError as err:
             print str(err)  # will print something like "option -a not recognized"
             sys.exit(2)
@@ -129,9 +131,13 @@ class AlgorithmConfig:
                 self.perc_cdr3_identity = float(arg)
             elif opt == '--min-comp-fr':
                 self.min_component_fraction = float(arg)
+            elif opt == '--min-cdr3':
+                self.min_cdr3_len = int(arg)
             elif opt == '--all':
                 self.min_graph_size = 1
                 self.min_lineage_size = 1
+            elif opt == '-n' or opt == '--num-lineages':
+                self.num_lineages = int(arg)
             elif opt == '--help':
                 self._PrintHelp()
                 sys.exit(0)
@@ -171,12 +177,12 @@ def main(argv):
     lineage_stats = lineage_stats_writer.ClonalLineageStatWriter(full_length_lineages)
     lineage_stats.OutputStats(os.path.join(output_dirs['main_dir'], 'raw_lineage_stats.txt'))
 
-    clonal_graph_utils.OutputAbundantAAGraphs(full_length_lineages, output_dirs, config)
-
-    print "Compiling HTML report..."
-    dir_dict = {'labels' : output_dirs['coloring_label'], 'multiplicity' : output_dirs['coloring_mult'], 'compressed' : output_dirs['compressed'], 'shm_matrix' : output_dirs['shm_matrix'], 'shm_plot' : output_dirs['shm_plot']}
-    html = html_writer.HTMLWriter(os.path.basename(output_dirs['clonal_graphs']), dir_dict, '.svg', ['shm_matrix', 'shm_plot'])
-    html.CreateHTMLReports(output_dirs['htmls'])
+#    clonal_graph_utils.OutputAbundantAAGraphs(full_length_lineages, output_dirs, config)
+#
+#    print "Compiling HTML report..."
+#    dir_dict = {'labels' : output_dirs['coloring_label'], 'multiplicity' : output_dirs['coloring_mult'], 'compressed' : output_dirs['compressed'], 'shm_matrix' : output_dirs['shm_matrix'], 'shm_plot' : output_dirs['shm_plot'], 'shm_depth' : output_dirs['coloring_shm']}
+#    html = html_writer.HTMLWriter(os.path.basename(output_dirs['clonal_graphs']), dir_dict, '.svg', ['shm_matrix', 'shm_plot'])
+#    html.CreateHTMLReports(output_dirs['htmls'])
 
     if config.remove_aux_files:
         print "Removing auxiliary direcitories..."

@@ -112,6 +112,11 @@ class ClonalGraph:
     def GetVertexDiversity(self, v):
         return len(self.aa_dict.GetIdsByAA(self.aa_dict.GetAAByIndex(v)))
 
+    def GetNumVSHMsByVertex(self, v):
+        aa_id = self.aa_dict.GetAAByIndex(v)
+        seq_ids = self.aa_dict.GetIdsByAA(aa_id)
+        return [len(self.full_length_lineage.Dataset().GetVSHMsOutsideCDR3(seq_id)) for seq_id in seq_ids]
+
     def GetVertexLabels(self, v):
         aa_id = self.aa_dict.GetAAByIndex(v)
         return self._GetAALabels(aa_id)
@@ -397,13 +402,20 @@ def DefineClonalGraphName(clonal_graph, lineage_id, comp_frac):
     return splits[0] + '_vertices' + str(clonal_graph.NumVertices()) + '_edges' + str(clonal_graph.NumEdges()) + '_cfrac' + '{:0.2f}'.format(comp_frac)
 
 def OutputAbundantAAGraphs(full_length_lineages, output_dirs, config):
+    lineage_index = 1
     for l in sorted(full_length_lineages, key = lambda s : len(s), reverse = True):
+#        if l.id() not in ['lineage22424', 'lineage22301', 'lineage22383', 'lineage22519', 'lineage22398', 'lineage22437', 'lineage22463']:
+#        if l.id() not in ['lineage24663', 'lineage24827']:
+#            continue
         if len(l) < config.min_lineage_size:
             continue
+        cdr3_length = l.CDR3Length()
+        if cdr3_length < config.min_cdr3_len:
+            continue
         # clonal tree construction step
-        print "== Processing lineage " + l.id() + '...'
+        print "== Processing lineage " + l.id() + ', CDR3 length: ' + str(cdr3_length) + '...'
         custom_filter = clonal_tree_constructor.CustomFilter([clonal_tree_constructor.AbundantLengthFilter(l), clonal_tree_constructor.AbundantVJFilter(l)]) #, clonal_tree_constructor.NaiveSequenceFilter(l)]) 
-        seq_iterator = clonal_tree_constructor.AllSequenceIterator(l) #clonal_tree_constructor.AbundantSequenceIterator(l, 5) 
+        seq_iterator = clonal_tree_constructor.AllSequenceIterator(l)
         edge_computer = clonal_tree_constructor.HGToolEdgeComputer(output_dirs['fl_lineages'], 'build/release/bin/./ig_swgraph_construct', config.hg_tau) # TODO: refactor
         tree_computer = mst_algorithms.VertexMultMSTFinder(l) #mst_algorithms.IGraphMSTFinder() # mst_algorithms.VertexMultMSTFinder(l)
         tree_constructor = clonal_tree_constructor.ClonalTreeConstructor(l, seq_iterator, custom_filter, edge_computer, tree_computer, config.min_graph_size, config.min_component_fraction)
@@ -447,9 +459,9 @@ def OutputAbundantAAGraphs(full_length_lineages, output_dirs, config):
         writer = clonal_tree_writer.ClonalGraphVisualizer(clonal_graph, vertex_mult_writer, edge_writer)
         writer.Output(os.path.join(output_dirs['coloring_mult'], graph_name))
         # diversity writing
-#        vertex_div_writer = clonal_tree_writer.DiversityVertexWriter(clonal_graph)
-#        writer = clonal_tree_writer.ClonalGraphVisualizer(clonal_graph, vertex_div_writer, edge_writer)
-#        writer.Output(os.path.join(output_dirs['coloring_div'], graph_name))
+        vertex_shm_writer = clonal_tree_writer.SHMDepthVertexWriter(clonal_graph)
+        writer = clonal_tree_writer.ClonalGraphVisualizer(clonal_graph, vertex_shm_writer, edge_writer)
+        writer.Output(os.path.join(output_dirs['coloring_shm'], graph_name))
         # label writing
         vertex_label_writer = clonal_tree_writer.LabelVertexWriter(clonal_graph)
         writer = clonal_tree_writer.ClonalGraphVisualizer(clonal_graph, vertex_label_writer, edge_writer)
@@ -462,3 +474,6 @@ def OutputAbundantAAGraphs(full_length_lineages, output_dirs, config):
 #        shm_writer = shm_visualizer.SHMVisualizer(clonal_graph)
 #        shm_dir = os.path.join(output_dirs['position_shms'], graph_name)
 #        shm_writer.OutputSHMsPerPosition(shm_dir)
+        lineage_index += 1
+        if lineage_index == config.num_lineages:
+            break

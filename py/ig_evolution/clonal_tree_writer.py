@@ -38,38 +38,38 @@ class CDR3VertexWriter:
         vertex_cdr3 = self._GetVertexCDR3(v)
         return 'ID:' + str(v) + " CDR3 ID:" + str(self.cdr3s.index(vertex_cdr3)) 
 
-class SHMDepthVertexWriter:
-    def __init__(self, clonal_tree):
-        self.clonal_tree = clonal_tree
-        self.full_length_lineage = clonal_tree.FullLengthLineage()
-        self.dataset = self.full_length_lineage.Dataset()
-        self._InitLineageSHMs()
-
-    def _InitLineageSHMs(self):
-        self.seq_shm_dict = dict()
-        self.min_num_shms = sys.maxint
-        self.max_num_shms = 0
-        for seq in self.clonal_tree.SequenceIter():
-            self.seq_shm_dict[seq.id] = 0
-            for gene_type in dataset.AnnotatedGene:
-                gene_shms = self.dataset.GetSHMsBySeqName(seq.id, gene_type)
-                self.seq_shm_dict[seq.id] += len(gene_shms)
-            self.max_num_shms = max(self.max_num_shms, self.seq_shm_dict[seq.id])
-            self.min_num_shms = min(self.min_num_shms, self.seq_shm_dict[seq.id])
-
-    def GetColor(self, v):
-        seq_id = self.clonal_tree.GetSequenceByVertex(v).id
-        rel_value = 0
-        if self.max_num_shms - self.min_num_shms != 0:
-            rel_value = float(self.seq_shm_dict[seq_id] - self.min_num_shms) / (self.max_num_shms - self.min_num_shms)
-        return utils.GetColorByNormalizedValue('Greens', rel_value)
-
-    def GetLabel(self, v):
-        return str(v)
-
-    def GetTooltip(self, v):
-        seq_id = self.clonal_tree.GetSequenceByVertex(v).id
-        return 'ID:' + str(v) + ' ' + str(self.seq_shm_dict[seq_id]) + ' SHM(s)'
+#class SHMDepthVertexWriter:
+#    def __init__(self, clonal_tree):
+#        self.clonal_tree = clonal_tree
+#        self.full_length_lineage = clonal_tree.FullLengthLineage()
+#        self.dataset = self.full_length_lineage.Dataset()
+#        self._InitLineageSHMs()
+#
+#    def _InitLineageSHMs(self):
+#        self.seq_shm_dict = dict()
+#        self.min_num_shms = sys.maxint
+#        self.max_num_shms = 0
+#        for seq in self.clonal_tree.SequenceIter():
+#            self.seq_shm_dict[seq.id] = 0
+#            for gene_type in dataset.AnnotatedGene:
+#                gene_shms = self.dataset.GetSHMsBySeqName(seq.id, gene_type)
+#                self.seq_shm_dict[seq.id] += len(gene_shms)
+#            self.max_num_shms = max(self.max_num_shms, self.seq_shm_dict[seq.id])
+#            self.min_num_shms = min(self.min_num_shms, self.seq_shm_dict[seq.id])
+#
+#    def GetColor(self, v):
+#        seq_id = self.clonal_tree.GetSequenceByVertex(v).id
+#        rel_value = 0
+#        if self.max_num_shms - self.min_num_shms != 0:
+#            rel_value = float(self.seq_shm_dict[seq_id] - self.min_num_shms) / (self.max_num_shms - self.min_num_shms)
+#        return utils.GetColorByNormalizedValue('Blues', rel_value)
+#
+#    def GetLabel(self, v):
+#        return str(v)
+#
+#    def GetTooltip(self, v):
+#        seq_id = self.clonal_tree.GetSequenceByVertex(v).id
+#        return 'ID:' + str(v) + ' ' + str(self.seq_shm_dict[seq_id]) + ' SHM(s)'
 
 class AASeqVertexWriter:
     def __init__(self, clonal_tree):
@@ -182,7 +182,7 @@ def GetVerterLabel(clonal_graph, v):
 def GetVertexToolTip(clonal_graph, v):
     mults = ','.join([str(m) for m in sorted(clonal_graph.GetVertexMultiplicities(v))])
     label = ','.join([str(l) for l in clonal_graph.GetVertexLabels(v)])
-    return str(v) + ', diversity: ' + str(clonal_graph.GetVertexDiversity(v)) + ', multiplicities: ' + mults + ', labels: ' + label
+    return str(v) + ', #SHMs: ' + str(min(clonal_graph.GetNumVSHMsByVertex(v))) + ', multiplicities: ' + mults + ', labels: ' + label
 
 class LevelMultiplicityVertexWriter:
     def __init__(self, clonal_graph):
@@ -200,6 +200,22 @@ class LevelMultiplicityVertexWriter:
                 level_ind = i
                 break
         return utils.GetColorByNormalizedValue('Reds', float(level_ind) / len(self.levels))
+
+    def GetLabel(self, v):
+        return GetVerterLabel(self.clonal_graph, v)
+
+    def GetTooltip(self, v):
+        return GetVertexToolTip(self.clonal_graph, v)
+
+class SHMDepthVertexWriter:
+    def __init__(self, clonal_graph):
+        self.clonal_graph = clonal_graph
+        self.max_num_shms = 50
+
+    def GetColor(self, v):
+        num_shms = min(self.clonal_graph.GetNumVSHMsByVertex(v))
+        mun_shms = min(num_shms, self.max_num_shms)
+        return utils.GetColorByNormalizedValue('Blues', float(mun_shms) / self.max_num_shms)
 
     def GetLabel(self, v):
         return GetVerterLabel(self.clonal_graph, v)
