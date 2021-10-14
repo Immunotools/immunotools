@@ -82,6 +82,7 @@ class AlgorithmConfig:
         self.min_component_fraction = 0.0
         self.perc_cdr3_identity = 90
         self.min_cdr3_len = 10
+        self.max_cdr3_len = 120
         self.divan_dir = ''
         self.output_dir = ''
         self.num_lineages = sys.maxint
@@ -176,8 +177,9 @@ def main(argv):
     print "Writing clonal lineage statistics..."
     lineage_stats = lineage_stats_writer.ClonalLineageStatWriter(full_length_lineages)
     lineage_stats.OutputStats(os.path.join(output_dirs['main_dir'], 'raw_lineage_stats.txt'))
+    lineage_stats.OutputClonalLineageAssignment(os.path.join(output_dirs['main_dir'], 'lineage_assignment.txt'))
 
-#    clonal_graph_utils.OutputAbundantAAGraphs(full_length_lineages, output_dirs, config)
+    clonal_graph_utils.OutputAbundantAAGraphs(full_length_lineages, output_dirs, config)
 #
 #    print "Compiling HTML report..."
 #    dir_dict = {'labels' : output_dirs['coloring_label'], 'multiplicity' : output_dirs['coloring_mult'], 'compressed' : output_dirs['compressed'], 'shm_matrix' : output_dirs['shm_matrix'], 'shm_plot' : output_dirs['shm_plot'], 'shm_depth' : output_dirs['coloring_shm']}

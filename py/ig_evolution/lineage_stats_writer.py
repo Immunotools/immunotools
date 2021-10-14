@@ -52,3 +52,11 @@ class ClonalLineageStatWriter:
             num_shms_in_root = len(self.dataset.GetVSHMsOutsideCDR3(root_seq.id)) + len(self.dataset.GetJSHMsOutsideCDR3(root_seq.id))
             fh.write(l.id() + '\t' + str(len(l)) + '\t' + str(self._GetNumberNonTrivialSequences(l)) + '\t' + str(self._GetHighestMultiplicity(l)) + '\t' + abundant_v + '\t' + abundant_j + '\t' + root_seq.id + '\t' + root_seq.seq + '\t' + self.dataset.GetCDR3BySeqName(root_seq.id) + '\t' + str(num_shms_in_root) + '\n')
         fh.close()
+
+    def OutputClonalLineageAssignment(self, output_fname):
+        fh = open(output_fname, 'w')
+        fh.write('SequenceID\tLineageID\n')
+        for lineage in sorted(self.clonal_lineages, key = lambda s : len(s), reverse = True):
+            for seq in lineage.FullLengthSeqIdIter():
+                fh.write(str(lineage.id()) + '\t' + seq.id + '\n')
+        fh.close()

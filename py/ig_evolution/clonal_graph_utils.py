@@ -404,13 +404,10 @@ def DefineClonalGraphName(clonal_graph, lineage_id, comp_frac):
 def OutputAbundantAAGraphs(full_length_lineages, output_dirs, config):
     lineage_index = 1
     for l in sorted(full_length_lineages, key = lambda s : len(s), reverse = True):
-#        if l.id() not in ['lineage22424', 'lineage22301', 'lineage22383', 'lineage22519', 'lineage22398', 'lineage22437', 'lineage22463']:
-#        if l.id() not in ['lineage24663', 'lineage24827']:
-#            continue
         if len(l) < config.min_lineage_size:
             continue
         cdr3_length = l.CDR3Length()
-        if cdr3_length < config.min_cdr3_len:
+        if cdr3_length < config.min_cdr3_len or cdr3_length > config.max_cdr3_len:
             continue
         # clonal tree construction step
         print "== Processing lineage " + l.id() + ', CDR3 length: ' + str(cdr3_length) + '...'
