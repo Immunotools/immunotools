@@ -65,7 +65,7 @@ class VJUsageAnalyzer:
 
     def Output(self):
         for v in self.gene_usage[dataset.AnnotatedGene.V]:
-            print v, [len(shms) for shms in self.gene_usage[dataset.AnnotatedGene.V][v]]
+            print(v, [len(shms) for shms in self.gene_usage[dataset.AnnotatedGene.V][v]])
 
     def _OutputSHMsForV(self, v_gene, output_fname):
         max_length = 300
@@ -88,6 +88,6 @@ class VJUsageAnalyzer:
 
     def OutputRootSHMs(self, output_dir):
         for v in self.gene_usage[dataset.AnnotatedGene.V]:
-            print "Output SHMs for " + v + " gene..."
+            print("Output SHMs for " + v + " gene...")
             self._OutputSHMsForV(v, os.path.join(output_dir, v + '.pdf'))
         

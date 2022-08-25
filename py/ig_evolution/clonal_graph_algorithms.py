@@ -1,6 +1,6 @@
 import os
 import sys
-import Queue
+import queue as Queue
 
 class DFSVertexOrderFinder: 
     def __init__(self, clonal_graph):
@@ -69,7 +69,7 @@ class GlonalGraphCompressor:
                 if len(path) > 1:
                     non_branching_paths.append(path)
             start_vertex = self._GetNextVertex(non_visited_vertices)
-        print str(len(non_branching_paths)) + ' non-trivial non-branching paths were extracted from clonal graph'
+        print(str(len(non_branching_paths)) + ' non-trivial non-branching paths were extracted from clonal graph')
         return non_branching_paths
 
     def _VertexIsGood(self, v, visited_vertices): 

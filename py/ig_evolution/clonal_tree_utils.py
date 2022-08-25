@@ -1,6 +1,6 @@
 import os
 import sys
-import Queue
+import queue as Queue
 from enum import Enum
 
 import dataset
@@ -78,7 +78,7 @@ class SimpleRootComputer:
                 min_num_shms = cur_num_shms
                 root_ind = v
         if root_ind == -1:
-            print "ERROR: root was not found"
+            print("ERROR: root was not found")
             sys.exit(1)
         return root_ind
 
@@ -258,7 +258,7 @@ class DirectEdge:
 
     def _SanityCheck(self):
         if len(self.reversed_v) == 0 and len(self.added_v) == 0 and len(self.reversed_j) == 0 and len(self.added_j) == 0 and len(self.cdr3_shms) == 0:
-            print "ERROR: two identical reads in the sample"
+            print("ERROR: two identical reads in the sample")
             sys.exit(1)
 
     def VSHMIter(self):

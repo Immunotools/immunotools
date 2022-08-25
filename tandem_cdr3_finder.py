@@ -168,7 +168,7 @@ def AnalyzeSimpleTandems(dd_dict, cdr3):
 
 ############################################
 def OutputDDMatrix(ordered_ds, dd_usage, output_fname):
-    print ordered_ds
+    print(ordered_ds)
     matrix = []
     annot_matrix = []
     for d in ordered_ds:
@@ -180,26 +180,26 @@ def OutputDDMatrix(ordered_ds, dd_usage, output_fname):
         for j in range(0, len(matrix[i])):
             if matrix[i][j] > 0:
                 annot_matrix[i][j] = str(matrix[i][j])
-    sns.heatmap(matrix, cmap = 'jet', xticklabels = ordered_ds, yticklabels = ordered_ds, annot = np.array(annot_matrix), fmt = '', cbar = False, square = True, linewidth = .1, linecolor = 'grey', annot_kws = {'size' : 10})
-    plt.yticks(rotation = 0, fontsize = 10)
+    sns.heatmap(matrix, cmap = 'jet', xticklabels = ordered_ds, yticklabels = ordered_ds, annot = np.array(annot_matrix), fmt = '', cbar = False, square = True, linewidth = .1, linecolor = 'grey', annot_kws = {'size' : 6})
+    plt.yticks(rotation = 0, fontsize = 6)
     plt.ylabel('Start D gene', fontsize = 12)
-    plt.xticks(rotation = 90, fontsize = 10)
+    plt.xticks(rotation = 90, fontsize = 6)
     plt.xlabel('End D gene', fontsize = 12)    
     pp = PdfPages(output_fname)
     pp.savefig()
     pp.close()
     plt.clf()   
-    print "Usage of D-D pairs is written to " + output_fname 
+    print("Usage of D-D pairs is written to " + output_fname)
 
-def OutputTandemCDR3sToTxt(dd_dict, output_fname):
+def OutputTandemCDR3sToTxt(dd_dict, num_cdr3s, output_fname):
     fh = open(output_fname, 'w')
-    fh.write('CDR3_name\tCDR3_seq\tD1_name\tD1_seq\tD2_name\tD2_seq\tInterD_insertion\n')
+    fh.write('CDR3_name\tCDR3_seq\tD1_name\tD1_seq\tD2_name\tD2_seq\tInterD_insertion\tNumSeqs\n')
     for dd in sorted(dd_dict):
         cur_tandem_cdr3s = dd_dict[dd]
         for cdr3 in cur_tandem_cdr3s:
-            fh.write(cdr3.cdr3.id + '\t' + cdr3.cdr3.seq + '\t' + dd[0] + '\t' + cdr3.tandem_match.d1_seq + '\t' + dd[1] + '\t' + cdr3.tandem_match.d2_seq + '\t' + cdr3.tandem_match.ins + '\n')
+            fh.write(cdr3.cdr3.id + '\t' + cdr3.cdr3.seq + '\t' + dd[0] + '\t' + cdr3.tandem_match.d1_seq + '\t' + dd[1] + '\t' + cdr3.tandem_match.d2_seq + '\t' + cdr3.tandem_match.ins + '\t' + str(num_cdr3s) + '\n')
     fh.close()
-    print "Information about tandem CDR3s is written to " + output_fname
+    print("Information about tandem CDR3s is written to " + output_fname)
 
 ############################################
 # Single match routines
@@ -234,7 +234,7 @@ def OutputSingleDUsageInTxt(single_d_usage, num_all_cdr3s, output_fname):
     for d in single_d_usage:
         fh.write(d + '\t' + str(len(single_d_usage[d])) + '\t' + str(float(len(single_d_usage[d])) / num_all_cdr3s * 100) + '\n')
     fh.close()
-    print "Usage of D genes in single CDR3s is written to " + output_fname
+    print("Usage of D genes in single CDR3s is written to " + output_fname)
 
 def OutputSingleDUsageInPdf(all_ds, single_d_usage, num_all_cdr3s, output_fname):
     usage = []
@@ -251,7 +251,7 @@ def OutputSingleDUsageInPdf(all_ds, single_d_usage, num_all_cdr3s, output_fname)
     pp.savefig()
     pp.close()
     plt.clf()
-    print "Usage of D genes in single CDR3s is written in " + output_fname
+    print("Usage of D genes in single CDR3s is written in " + output_fname)
 
 def UpdateSeqCoverage(cov_list, seqs, subseq):
     index = -1
@@ -279,7 +279,7 @@ def OutputDCoverage(d_name, d_seqs, single_cdr3s, output_fname):
     pp.savefig()
     pp.close()
     plt.clf()
-    print "Coverage of " + d_name + ' is written to ' + output_fname
+    print("Coverage of " + d_name + ' is written to ' + output_fname)
 
 ############################################
 def HammingDistance(seq1, seq2):
@@ -412,11 +412,11 @@ def ClassifyCDR3s(cdr3s, d_genes, min_k):
         
 ############################################
 def OutputBaseCDR3Stats(selected_cdr3s, num_cdr3s, cdr3_type):
-    print str(len(selected_cdr3s)) + " out of " + str(num_cdr3s) + ' CDR3s are ' + cdr3_type + " (" + str(float(len(selected_cdr3s)) / num_cdr3s * 100) + '%)'
+    print(str(len(selected_cdr3s)) + " out of " + str(num_cdr3s) + ' CDR3s are ' + cdr3_type + " (" + str(float(len(selected_cdr3s)) / num_cdr3s * 100) + '%)')
     if len(selected_cdr3s) == 0:
         return 
     cdr3_lens = [len(cdr3.Seq()) for cdr3 in selected_cdr3s]
-    print "Average length of " + cdr3_type + " CDR3s: " + str(np.mean(cdr3_lens)) + ' nt'
+    print("Average length of " + cdr3_type + " CDR3s: " + str(np.mean(cdr3_lens)) + ' nt')
 
 ############################################
 def ComputeSingleDUsage(single_cdr3s):
@@ -448,21 +448,21 @@ def FilterErroneousTandemCDR3s(tandem_cdr3s, d_genes, min_dist = 3):
         else:
             num_good_dist_pairs += 1
             good_tandems.append(cdr3)
-    print str(num_good_dist_pairs) + ' out of ' + str(num_bad_dist_pairs + num_good_dist_pairs) + ' tandem CDR3s are non-erroneous'
+    print(str(num_good_dist_pairs) + ' out of ' + str(num_bad_dist_pairs + num_good_dist_pairs) + ' tandem CDR3s are non-erroneous')
     return good_tandems
 
 ############################################
 def main(d_fasta, cdr3_fasta, output_dir, min_k):
-    print "== Tandem CDR3 Finder starts..."
+    print("== Tandem CDR3 Finder starts...")
     d_genes = ReadFasta(d_fasta)
-    print str(len(d_genes)) + " D gene alleles were extracted from " + d_fasta
+    print(str(len(d_genes)) + " D gene alleles were extracted from " + d_fasta)
     d_dict = GetDDict(d_genes)
-    print str(len(d_genes)) + " correspond to " + str(len(d_dict)) + ' D genes (duplications are discarded)'
+    print(str(len(d_genes)) + " correspond to " + str(len(d_dict)) + ' D genes (duplications are discarded)')
 
     cdr3s = ReadFasta(cdr3_fasta)
-    print str(len(cdr3s)) + " CDR3s were extracted from " + cdr3_fasta
+    print(str(len(cdr3s)) + " CDR3s were extracted from " + cdr3_fasta)
     cdr3s = CollapseIdenticalCDR3s(cdr3s)
-    print str(len(cdr3s)) + " CDR3s are distinct"
+    print(str(len(cdr3s)) + " CDR3s are distinct")
     cropper = cdr3_cropper.CDR3Cropper('data/germline/human/IG/IGHV.fa', 'data/germline/human/IG/IGHJ.fa', min_k)
     cropped_cdr3s = cropper.CropCDR3s(cdr3s)
 
@@ -483,9 +483,9 @@ def main(d_fasta, cdr3_fasta, output_dir, min_k):
     OutputBaseCDR3Stats(cdr3_dict[CDR3Type.TANDEM], len(cdr3s), 'tandem')
 
     # single usage
-    print "== Analysis of single CDR3s..."
+    print("== Analysis of single CDR3s...")
     single_usage = ComputeSingleDUsage(cdr3_dict[CDR3Type.SINGLE])
-    print str(len(single_usage)) + ' out of ' + str(len(d_dict)) + ' D genes are used in single CDR3s'
+    print(str(len(single_usage)) + ' out of ' + str(len(d_dict)) + ' D genes are used in single CDR3s')
     OutputSingleDUsageInTxt(single_usage, len(cdr3s), os.path.join(output_dir, 'single_d_usage.txt'))
     OutputSingleDUsageInPdf(ordered_d_names, single_usage, len(cropped_cdr3s), os.path.join(output_dir, 'single_d_usage.pdf'))
     single_output_dir = os.path.join(output_dir, "single_d_usage")
@@ -505,15 +505,15 @@ def main(d_fasta, cdr3_fasta, output_dir, min_k):
     output_fh.close() 
 
     # tandem usage
-    print "== Analysis of tandem CDR3s..."
-    print "Filtering erroneous CDR3s..."
+    print("== Analysis of tandem CDR3s...")
+    print("Filtering erroneous CDR3s...")
     good_tandem_cdr3s = FilterErroneousTandemCDR3s(cdr3_dict[CDR3Type.TANDEM], d_genes)
     dd_dict = ComputeTandemDUsage(good_tandem_cdr3s)
-    OutputTandemCDR3sToTxt(dd_dict, os.path.join(output_dir, 'tandem_cdr3s.txt'))
+    OutputTandemCDR3sToTxt(dd_dict, len(cdr3s), os.path.join(output_dir, 'tandem_cdr3s.txt'))
     OutputDDMatrix(ordered_d_names, dd_dict, os.path.join(output_dir, 'tandem_dd_matrix.pdf'))
 
 if __name__ == '__main__':
     if len(sys.argv) != 5:
-        print "tandem_cdr3_finder.py IGHD.fa cdr3s.fasta output_dir min_k"
+        print("tandem_cdr3_finder.py IGHD.fa cdr3s.fasta output_dir min_k")
         sys.exit(1)
     main(sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4]))

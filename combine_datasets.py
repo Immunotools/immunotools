@@ -37,7 +37,7 @@ class DivanOutput:
         for r in SeqIO.parse(self.seq_fasta, 'fasta'):
             r.seq = str(r.seq)
             self.cleaned_seqs.append(r)
-        print str(len(self.cleaned_seqs)) + ' sequences were extracted from ' + self.seq_fasta
+        print(str(len(self.cleaned_seqs)) + ' sequences were extracted from ' + self.seq_fasta)
         self._CollapseIdenticalSequences()
 
     def _ReadCDRDetails(self):
@@ -74,7 +74,7 @@ class DivanOutput:
                 self.seq_mult_dict[seq] = 0 
             self.seq_mult_dict[seq] += self._GetMultByHeader(self.cleaned_seqs[i].id)
             self.seq_ind_dict[seq].append(i)
-        print str(len(self.seq_ind_dict)) + ' distinct sequences were computed from ' + str(len(self.cleaned_seqs)) + ' original sequences'
+        print(str(len(self.seq_ind_dict)) + ' distinct sequences were computed from ' + str(len(self.cleaned_seqs)) + ' original sequences')
 
     def Id(self):
         return self.divan_dir
@@ -103,9 +103,9 @@ def ParseOptions(sys_args):
     try:
         options, remainder = getopt.getopt(sys_args[1:], 'i:o:', ["parse-mult"])
     except getopt.GetoptError as err:
-        print str(err)  # will print something like "option -a not recognized"
+        print(str(err))  # will print something like "option -a not recognized"
         sys.exit(2)
-    print options, remainder
+    print(options, remainder)
     for opt, arg in options:
         if opt == "-i":
             input_config.config_fname = arg
@@ -124,7 +124,7 @@ def ComputeDistinctSequences(divan_dirs):
             if seq not in seq_dict:
                 seq_dict[seq] = []
             seq_dict[seq].append(d.Id())
-    print str(len(seq_dict)) + ' distinct sequences were extracted from ' + str(len(divan_dirs)) + ' datasets'
+    print(str(len(seq_dict)) + ' distinct sequences were extracted from ' + str(len(divan_dirs)) + ' datasets')
     return seq_dict
 
 class CombinedDataWriter:
@@ -144,7 +144,7 @@ class CombinedDataWriter:
                     self.seq_dict[seq] = []
                     self.seq_order.append(seq)
                 self.seq_dict[seq].append(i)
-        print str(len(self.seq_dict)) + ' distinct sequences were extracted from ' + str(len(self.divan_dirs)) + ' datasets'
+        print(str(len(self.seq_dict)) + ' distinct sequences were extracted from ' + str(len(self.divan_dirs)) + ' datasets')
 
     def _GetFirstSeqRecordID(self, seq):
         divan_ind = self.seq_dict[seq][0]
@@ -216,7 +216,7 @@ class CombinedDataWriter:
             v_alignment = divan_dir.GetVAlignmentBySeq(seq)
             read_id_splits = v_alignment[0][0].split('|')
 #            if len(read_id_splits) != 4:
-#                print "Unexpected format: " + str(read_id_splits)
+#                print("Unexpected format: " + str(read_id_splits))
 #                sys.exit(1)
             fh.write('>INDEX:' + str(record_index) + '|READ:' + new_seq_id + '|' + read_id_splits[-2] + '|' + read_id_splits[-1] + '\n')
             fh.write(v_alignment[0][1] + '\n')
@@ -235,9 +235,9 @@ def main(args):
     for i in range(len(config_df)):
         divan_dir = config_df['Directory'][i]
 #        config_df['Label'][i] = str(config_df['Label'][i])
-        print "== Reading " + divan_dir + ', label ' + str(config_df['Label'][i])
+        print("== Reading " + divan_dir + ', label ' + str(config_df['Label'][i]))
         divan_dirs.append(DivanOutput(divan_dir, config.parse_mult))
-    print str(len(divan_dirs)) + ' datasets were processed'
+    print(str(len(divan_dirs)) + ' datasets were processed')
  
     writer = CombinedDataWriter(divan_dirs, config_df, config.output_dir)
     writer.OutputCombinedSequences()

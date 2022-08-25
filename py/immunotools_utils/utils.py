@@ -6,7 +6,7 @@ from Bio import SeqIO
 def ReadFasta(fasta_fname):
     records = []
     if not os.path.exists(fasta_fname) or fasta_fname == '':
-        print "ERROR: file " + fasta_fname + ' was not found'
+        print("ERROR: file " + fasta_fname + ' was not found')
         sys.exit(1)
     for r in SeqIO.parse(fasta_fname, 'fasta'):
         r.seq = str(r.seq).upper()

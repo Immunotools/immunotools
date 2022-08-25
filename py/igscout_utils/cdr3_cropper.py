@@ -24,14 +24,14 @@ class CDR3Cropper:
         self.right_trim_length = 15
         self.min_k = 9
         self.v_genes = self._ReadInputGenes(self.v_fasta)
-        print "# V genes: " + str(len(self.v_genes))
+        print("# V genes: " + str(len(self.v_genes)))
         self.j_genes = self._ReadInputGenes(self.j_fasta)
-        print "# J genes: " + str(len(self.j_genes))
+        print("# J genes: " + str(len(self.j_genes)))
 
     def _ReadInputGenes(self, fasta_fname):
         if fasta_fname != '':
             if not os.path.exists(fasta_fname):
-                print "ERROR: invalid FASTA file with V genes: " + fasta_fname
+                print("ERROR: invalid FASTA file with V genes: " + fasta_fname)
                 return []
             return ReadFasta(fasta_fname)
         return []
@@ -68,5 +68,5 @@ class CDR3Cropper:
                 cropped_seqs.append(cdr3)
                 num_trimmed_cdr3s += 1
             num_processed += 1
-        print str(num_trimmed_cdr3s) + " out of " + str(num_processed) + " trimmed CDR3s have length >= " + str(self.min_length) + ' nt'
+        print(str(num_trimmed_cdr3s) + " out of " + str(num_processed) + " trimmed CDR3s have length >= " + str(self.min_length) + ' nt')
         return cropped_seqs

@@ -61,7 +61,7 @@ class ClonalGraph:
             if aa_edge not in self.aa_edges:
                 self.aa_edges[aa_edge] = 0
             self.aa_edges[aa_edge] += 1
-        print "# amino acid vertices: " + str(len(self.vertex_indices))
+        print("# amino acid vertices: " + str(len(self.vertex_indices)))
 
     def _InitRoot(self):
         root_aa = self.aa_dict.GetAAById(self.clonal_tree.RootSeq().id)
@@ -335,7 +335,7 @@ class TreeSHMs:
 
     def Print(self):
         for e in self.edge_shm_map:
-            print e, [(str(shm) + ' : ' + str(len(self.shm_edge_map[shm]))) for shm in self.edge_shm_map[e]]
+            print(e, [(str(shm) + ' : ' + str(len(self.shm_edge_map[shm]))) for shm in self.edge_shm_map[e]])
 
 def OutputClonalTree(clonal_tree, full_length_lineage, output_base, vertex_writer):
     if clonal_tree.NumVertices() > 1000:
@@ -359,8 +359,8 @@ def PrintAbundantSequences(full_length_lineage):
     dataset = full_length_lineage.Dataset()
     for seq in full_length_lineage.FullLengthSeqIdIter():
         if dataset.GetSeqMultiplicity(seq.id) > 100:
-            print '>' + seq.id
-            print seq.seq
+            print('>' + seq.id)
+            print(seq.seq)
 
 def OutputCompressedGraph(clonal_graph, compressed_paths, output_base):
     vertex_path_dict = dict()
@@ -410,7 +410,7 @@ def OutputAbundantAAGraphs(full_length_lineages, output_dirs, config):
         if cdr3_length < config.min_cdr3_len or cdr3_length > config.max_cdr3_len:
             continue
         # clonal tree construction step
-        print "== Processing lineage " + l.id() + ', CDR3 length: ' + str(cdr3_length) + '...'
+        print("== Processing lineage " + l.id() + '...')
         custom_filter = clonal_tree_constructor.CustomFilter([clonal_tree_constructor.AbundantLengthFilter(l), clonal_tree_constructor.AbundantVJFilter(l)]) #, clonal_tree_constructor.NaiveSequenceFilter(l)]) 
         seq_iterator = clonal_tree_constructor.AllSequenceIterator(l)
         edge_computer = clonal_tree_constructor.HGToolEdgeComputer(output_dirs['fl_lineages'], 'build/release/bin/./ig_swgraph_construct', config.hg_tau) # TODO: refactor
@@ -432,7 +432,7 @@ def OutputAbundantAAGraphs(full_length_lineages, output_dirs, config):
         leaf_filters = [clonal_tree_simplification.LowFixedAbundanceLeafRemover(clonal_tree, config.min_abs_abundance), clonal_tree_simplification.RelativeAbundanceLeafRemover(clonal_tree, config.max_rel_abundance)]
         leaf_remover = clonal_tree_simplification.IterativeTipRemover(clonal_tree, leaf_filters)
         cleaned_tree = leaf_remover.CleanTips()
-        print "# vertices after simplification: " + str(cleaned_tree.NumVertices())
+        print("# vertices after simplification: " + str(cleaned_tree.NumVertices()))
         if cleaned_tree.NumVertices() < config.min_graph_size:
             continue
         # writing clonal tree

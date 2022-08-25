@@ -1,5 +1,3 @@
-#!/usr/bin/env python2
-
 import os
 import shutil
 import sys
@@ -77,9 +75,9 @@ class AlgorithmConfig:
         self.min_graph_size = 10
         self.parse_headers = False
         self.min_lineage_size = 100
-        self.max_lineage_size = sys.maxint
-        self.hg_tau = 30
-        self.min_component_fraction = 0.0
+        self.max_lineage_size = 100000000 #sys.maxint
+        self.hg_tau = 10
+        self.min_component_fraction = 0.7
         self.perc_cdr3_identity = 90
         self.min_cdr3_len = 10
         self.max_cdr3_len = 120
@@ -91,10 +89,10 @@ class AlgorithmConfig:
         self._PrintArgs()
 
     def _PrintArgs(self):
-        print "==== IgEvolution parameters:"
-        print "Min relative (absolute) vertex abundance: " + str(self.max_rel_abundance) + ' (' + str(self.min_abs_abundance) + ')'
-        print "Min lineage (graph) size: " + str(self.min_lineage_size) + ' (' + str(self.min_graph_size) + ')'
-        print "Hamming graph TAU: " + str(self.hg_tau) 
+        print("==== IgEvolution parameters:")
+        print("Min relative (absolute) vertex abundance: " + str(self.max_rel_abundance) + ' (' + str(self.min_abs_abundance) + ')')
+        print("Min lineage (graph) size: " + str(self.min_lineage_size) + ' (' + str(self.min_graph_size) + ')')
+        print("Hamming graph TAU: " + str(self.hg_tau)) 
 
     def _ParseArgs(self, args):
         try:
@@ -102,7 +100,7 @@ class AlgorithmConfig:
                                                                   'min-rel=', 'hg-tau=', 'min-graph=', 'help', 'num-lineages=',
                                                                   'skip-err-corr', 'keep-aux-files', 'all', 'cdr3-pi=', 'min-comp-fr=', 'min-cdr3='])
         except getopt.GetoptError as err:
-            print str(err)  # will print something like "option -a not recognized"
+            print(str(err))  # will print something like "option -a not recognized"
             sys.exit(2)
         for opt, arg in options:
             if opt == "-i":
@@ -145,16 +143,16 @@ class AlgorithmConfig:
             else:
                 assert False, "unhandled option"
         if self.output_dir == '':
-            print "ERROR: output directory (-o) was not specified"
+            print("ERROR: output directory (-o) was not specified")
             sys.exit(1)
         if self.divan_dir == '':
-            print "ERROR: input directory (-i) was not specified"
+            print("ERROR: input directory (-i) was not specified")
             sys.exit(1)
 
     def _PrintHelp(self):
-        print "python ig_evolution_launch.py -i divan_dir -o output_dir [--min-lineage MIN_LIN_SIZE " \
+        print("python ig_evolution_launch.py -i divan_dir -o output_dir [--min-lineage MIN_LIN_SIZE " \
               "--max-lineage MAX_LIN_SIZE --min-graph MIN_GRAPH_SIZE --hg-tau HG_TAU --min-abs MIN_ABS_ABUN " \
-              "--min-rel MIN_REL_ABUN --parse-mults --skip-err-corr]"
+              "--min-rel MIN_REL_ABUN --parse-mults --skip-err-corr]")
 
 def main(argv):
     config = AlgorithmConfig(argv)
@@ -172,25 +170,25 @@ def main(argv):
     full_length_lineages = []
     for l in cdr3_lineages:
         full_length_lineages.append(full_length_clonal_lineage.FullLengthClonalLineage(l))
-    print str(len(full_length_lineages)) + " full-length lineages were constructed"
+    print(str(len(full_length_lineages)) + " full-length lineages were constructed")
 
-    print "Writing clonal lineage statistics..."
+    print("Writing clonal lineage statistics...")
     lineage_stats = lineage_stats_writer.ClonalLineageStatWriter(full_length_lineages)
     lineage_stats.OutputStats(os.path.join(output_dirs['main_dir'], 'raw_lineage_stats.txt'))
     lineage_stats.OutputClonalLineageAssignment(os.path.join(output_dirs['main_dir'], 'lineage_assignment.txt'))
 
     clonal_graph_utils.OutputAbundantAAGraphs(full_length_lineages, output_dirs, config)
-#
-#    print "Compiling HTML report..."
-#    dir_dict = {'labels' : output_dirs['coloring_label'], 'multiplicity' : output_dirs['coloring_mult'], 'compressed' : output_dirs['compressed'], 'shm_matrix' : output_dirs['shm_matrix'], 'shm_plot' : output_dirs['shm_plot'], 'shm_depth' : output_dirs['coloring_shm']}
-#    html = html_writer.HTMLWriter(os.path.basename(output_dirs['clonal_graphs']), dir_dict, '.svg', ['shm_matrix', 'shm_plot'])
-#    html.CreateHTMLReports(output_dirs['htmls'])
+
+    print("Compiling HTML report...")
+    dir_dict = {'labels' : output_dirs['coloring_label'], 'multiplicity' : output_dirs['coloring_mult'], 'compressed' : output_dirs['compressed'], 'shm_matrix' : output_dirs['shm_matrix'], 'shm_plot' : output_dirs['shm_plot']}
+    html = html_writer.HTMLWriter(os.path.basename(output_dirs['clonal_graphs']), dir_dict, '.svg', ['shm_matrix', 'shm_plot'])
+    html.CreateHTMLReports(output_dirs['htmls'])
 
     if config.remove_aux_files:
-        print "Removing auxiliary direcitories..."
+        print("Removing auxiliary directories...")
         RemoveAuxDirs(output_dirs)
 
-    print "Thank you for using IgEvolution!"
+    print("Thank you for using IgEvolution!")
 
 if __name__ == '__main__':
     main(sys.argv)

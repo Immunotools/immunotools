@@ -14,7 +14,7 @@ def GetGeneByStr(gene_str):
     for gene in AnnotatedGene:
         if gene.name == gene_str:
             return gene
-    print "String " + gene_str + ' does not correspond to any gene'
+    print("String " + gene_str + ' does not correspond to any gene')
     sys.exit(1)
 
 ##################### INFORMATION ABOUT PATHS, FILENAMES, ETC #####################
@@ -45,7 +45,7 @@ class DatasetConfig:
 
 class Dataset:
     def __init__(self, dataset_info, divan_output_dir, parse_headers):
-        print "Reading dataset from " + divan_output_dir + '...'
+        print("Reading dataset from " + divan_output_dir + '...')
         self.dataset_info = dataset_info
         self.config = DatasetConfig(divan_output_dir)
         self.parse_headers = parse_headers
@@ -55,21 +55,21 @@ class Dataset:
         self._FindDistinctCDR3s()
 
     def _InitFillLenSequences(self):
-        print "  Reading " + self.config.full_len_seq + '...'
+        print("  Reading " + self.config.full_len_seq + '...')
         self.fl_seq_storage = SeqStorage(self.config.full_len_seq, self.parse_headers)
-        print '  ' + str(len(self.fl_seq_storage)) + ' out of ' + str(self.fl_seq_storage.NumOriginalSequences()) + ' full-length sequences are distinct'
-        self.label_collection = Labels('tab20')
+        print('  ' + str(len(self.fl_seq_storage)) + ' out of ' + str(self.fl_seq_storage.NumOriginalSequences()) + ' full-length sequences are distinct')
+        self.label_collection = Labels('Greens')
         for seq_id in self.fl_seq_storage:
             cur_labels = self.fl_seq_storage.GetSequenceLabels(seq_id)
             self.label_collection.AddLabel(cur_labels)
         self.label_collection.PrintLabels()
 
     def _InitAnnotationDF(self):
-        print "  Reading " + self.config.cdr_details + '...'
+        print("  Reading " + self.config.cdr_details + '...')
         self.annotation_df = AnnotationDF(self.config.cdr_details)
 
     def _FindDistinctCDR3s(self):
-        print "  Finding distinct CDR3s..."
+        print("  Finding distinct CDR3s...")
         self.distinct_cdr3s = []
         self.cdr3_index = dict() # CDR3 seq -> CDR3 index
         self.cdr3_dict = dict() # CDR3 index -> indices of sequences
@@ -85,7 +85,7 @@ class Dataset:
             self.cdr3_dict[cdr3_index].append(seq_name)
 
     def _InitSHMDF(self):
-        print "  Reading " + self.config.shm_details + '...'
+        print("  Reading " + self.config.shm_details + '...')
         self.shm_df = SHMDF(self.config.shm_details)
 
     #### PUBLIC METHODS 
@@ -208,7 +208,7 @@ class Labels:
         return self.color_dict[min_label]
 
     def PrintLabels(self):
-        print '  ' + str(len(self.labels)) + " labels were extracted [" + ' '.join([str(l) for l in self.labels]) + ']'
+        print('  ' + str(len(self.labels)) + " labels were extracted [" + ' '.join([str(l) for l in self.labels]) + ']')
 
 class SeqStorage:
     def __init__(self, fasta_fname, parse_headers):
@@ -254,7 +254,7 @@ class SeqStorage:
 
     def GetSequenceByName(self, seq_name):
         if seq_name not in self.read_index_map:
-            print "ERROR: sequence " + seq_name + ' is not found in the storage'
+            print("ERROR: sequence " + seq_name + ' is not found in the storage')
             sys.exit(1)
         return self.seqs[self.read_index_map[seq_name]]
 
@@ -290,12 +290,12 @@ class AnnotationDF:
 
     def _CheckSeqNameFatal(self, seq_name):
         if seq_name not in self.read_index_map:
-            print "ERROR: sequence " + seq_name + ' is not found in the data frame'
+            print("ERROR: sequence " + seq_name + ' is not found in the data frame')
             sys.exit(1)
 
     def _CheckGeneTypeFatal(self, gene_type):
         if gene_type not in AnnotatedGene:
-            print "Gene with type " + str(gene_type) + ' was not found'
+            print("Gene with type " + str(gene_type) + ' was not found')
             sys.exit(1)
 
     #### PUBLIC METHODS
@@ -313,7 +313,7 @@ class AnnotationDF:
 
     def GetCDR3ByIndex(self, cdr3_index):
         if cdr3_index >= len(self.df):
-            print "Index " + str(self.df) + ' exceeds the size of data frame'
+            print("Index " + str(self.df) + ' exceeds the size of data frame')
             sys.exit(1)
         return self.df['CDR3_nucls'][cdr3_index]
 

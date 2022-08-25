@@ -51,7 +51,7 @@ class CDR3Lineage:
             self.dataset_indices.append(cur_index)
         local_ind_vertices, local_ind_edges = self._ReadLineageGraph(lineage_graph_fname)
         if len(self.dataset_indices) != len(local_ind_vertices):
-            print "ERROR: the number of vertices in " + lineage_graph_fname + ' does not match with the number of sequences in ' + lineage_fasta_fname 
+            print("ERROR: the number of vertices in " + lineage_graph_fname + ' does not match with the number of sequences in ' + lineage_fasta_fname) 
         local_dataset_ind_dict = dict() # local index -> dataset index
         for i in range(len(self.dataset_indices)):
             local_dataset_ind_dict[local_ind_vertices[i]] = self.dataset_indices[i]
@@ -154,7 +154,7 @@ class CDR3LineageStorage:
                 lineage_fasta = os.path.join(os.path.join(lineage_dir, d), f.split('.')[0] + '.fasta')
                 self.lineages.append(CDR3Lineage(dataset, lineage_fasta, lineage_graph, lineage_index))
                 lineage_index += 1
-        print str(len(self.lineages)) + " lineages were extracted from " + graph_dir + ' & ' + lineage_dir
+        print(str(len(self.lineages)) + " lineages were extracted from " + graph_dir + ' & ' + lineage_dir)
 
     def __iter__(self):
         for l in self.lineages:
@@ -165,14 +165,14 @@ class CDR3LineageStorage:
 
 class CDR3LineageConstructor:
     def __init__(self, dataset, output_dirs, perc_cdr3_identity):
-        print "== CDR3 lineage constructor starts"
+        print("== CDR3 lineage constructor starts")
         self.dataset = dataset
         self.output_dir = output_dirs['main_dir']
         self.perc_cdr3_identity = perc_cdr3_identity
         self.length_level = 30
         self.length_tau = int(float(100 - self.perc_cdr3_identity) / 100 * self.length_level)
-        print "CDR3 percent identity: " + str(self.perc_cdr3_identity)
-        print "Starting CDR3 tau: " + str(self.length_tau)
+        print("CDR3 percent identity: " + str(self.perc_cdr3_identity))
+        print("Starting CDR3 tau: " + str(self.length_tau))
         # output files and dirs
         self.cdr3_fasta_dir = output_dirs['cdr3_fasta_dir'] #os.path.join(self.output_dir, 'cdr3_fasta')
         self.cdr3_graph_dir = output_dirs['cdr3_graph_dir'] #os.path.join(self.output_dir, 'cdr3_graphs')
@@ -200,7 +200,7 @@ class CDR3LineageConstructor:
         self._CreateNonExistingDir(self.lineage_dir)
 
     def _OutputCDR3sByLengthLevels(self):
-        print "Writing CDR3s to FASTA files according to their lengths"
+        print("Writing CDR3s to FASTA files according to their lengths")
         cdr_length_dict = dict()
         self.cdr3_index_map = dict() # index of CDR3 in FASTA -> index of CDR3 in dataset
         cdr3_index = 0
@@ -215,15 +215,19 @@ class CDR3LineageConstructor:
             cdr_length_dict[cdr3_length].append(i)
         start_level = min(cdr_length_dict.keys()) / self.length_level * self.length_level
         end_level = (max(cdr_length_dict.keys()) / self.length_level + 1) * self.length_level
-        levels = range(start_level, end_level, self.length_level)
+        print(start_level, end_level, self.length_level)
+        levels = range(int(start_level), int(end_level), self.length_level)
+        print(start_level, end_level, self.length_level)
         fhandler_dict = dict()
         self.file_distance_dict = dict()
         for l in levels:
+            l = int(l)
             fname = os.path.join(self.cdr3_fasta_dir, "cdr3s_" + str(l) + '_' + str(l + self.length_level) + '.fasta')
             self.file_distance_dict[fname] = (l / self.length_level + 1) * self.length_tau
             fhandler_dict[l] = open(fname, 'w')
+        print(fhandler_dict)
         for cdr3_len in sorted(cdr_length_dict):
-            cdr3_len_level = cdr3_len / self.length_level * self.length_level
+            cdr3_len_level = int(cdr3_len / self.length_level) * self.length_level
             fh = fhandler_dict[cdr3_len_level]
             for cdr3_index in cdr_length_dict[cdr3_len]:
                 fh.write('>INDEX:' + str(cdr3_index) + '|MULT:' + str(self.dataset.GetCDR3Multiplicity(cdr3_index)) + '\n')
@@ -232,26 +236,26 @@ class CDR3LineageConstructor:
             fhandler_dict[l].close()
 
     def _ConstructCDR3GraphsByLengthLevel(self):
-        print "Constructing Hamming graph on CDR3s..."
+        print("Constructing Hamming graph on CDR3s...")
         fasta_files = os.listdir(self.cdr3_fasta_dir)
         for f in fasta_files:
             full_path = os.path.join(self.cdr3_fasta_dir, f)
-            print "  Constructing Hamming graph on " + full_path + ' with tau = ' + str(self.file_distance_dict[full_path])
+            print("  Constructing Hamming graph on " + full_path + ' with tau = ' + str(self.file_distance_dict[full_path]))
             base_name = f.split('.')[0]
             os.system(ClonalLineageConfig.hg_constructor + ' ' + full_path + ' ' + os.path.join(self.cdr3_graph_dir, base_name + '.graph') + ' ' + str(self.file_distance_dict[full_path]) + ' > /dev/null')
 
     def _ComposeCDR3GraphsIntoConnectedComponents(self):
-        print "Decomposing graph into connected components..."
+        print("Decomposing graph into connected components...")
         graph_files = os.listdir(self.cdr3_graph_dir)
         for f in graph_files:
-            print "  Decomposing " + os.path.join(self.cdr3_graph_dir, f) + '...'
+            print("  Decomposing " + os.path.join(self.cdr3_graph_dir, f) + '...')
             basename = f.split('.')[0]
             component_subdir = os.path.join(self.connected_comp_dir, basename)
             os.mkdir(component_subdir)
             os.system(ClonalLineageConfig.hg_processor + ' ' + os.path.join(self.cdr3_graph_dir, f) + ' ' + component_subdir + ' > /dev/null')
 
     def _DecomposeCDR3s(self):
-        print "Decomposing CDR3s into CDR3 clonal lineages..."
+        print("Decomposing CDR3s into CDR3 clonal lineages...")
         self.lineage_dir = os.path.join(self.output_dir, 'cdr3_lineages')
         component_dirs = os.listdir(self.connected_comp_dir)
         for d in component_dirs:

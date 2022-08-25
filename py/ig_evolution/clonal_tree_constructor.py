@@ -109,7 +109,7 @@ class AbundantSequenceIterator:
             if self.dataset.GetSeqMultiplicity(seq.id) < self.min_abs_abundance:
                 continue
             abundant_seqs.append(seq)
-        print "The number of sequences is reduced from " + str(num_seqs) + ' to ' + str(len(abundant_seqs))
+        print("The number of sequences is reduced from " + str(num_seqs) + ' to ' + str(len(abundant_seqs)))
         yield abundant_seqs
             
 class AbundantAASequenceIterator:
@@ -197,7 +197,7 @@ class HGToolEdgeComputer:
     def _GetLargestConnectedComponent(self, graph):
         connected_components = graph.GetConnectedComponents()
         sorted_components = sorted(connected_components, key = lambda s : len(s), reverse = True)
-        print "Connected component: " + str(float(len(sorted_components[0])) / graph.NumVertices())
+        print("Connected component: " + str(float(len(sorted_components[0])) / graph.NumVertices()))
         return sorted_components[0]
 
     def _GetComponentEdges(self, graph, component):
@@ -229,19 +229,19 @@ class ClonalTreeConstructor:
 #            print '  ' + str(len(seqs)) + ' -> ' + str(len(filtered_seqs))
             if len(filtered_seqs) < self.min_tree_size:
                 continue
-            print "Computing edges of the Hamming graph..."
+            print("Computing edges of the Hamming graph...")
             edge_weights, component_fraction = self.edge_computer.ComputeEdges(filtered_seqs)
             if component_fraction < self.min_component_frac:
-                print "WARN: lineage is likely combined by similar naive sequences and will be skipped"
+                print("WARN: lineage is likely combined by similar naive sequences and will be skipped")
                 continue
-            print "Computing MST of the Hamming graph..."
+            print("Computing MST of the Hamming graph...")
             tree_weights = self.tree_computer.ComputeSpanningTree(filtered_seqs, edge_weights)
             undirected_tree = clonal_tree_utils.UndirectedClonalTree(self.full_length_lineage, filtered_seqs)
             for e in tree_weights:
                 undirected_tree.AddEdge(e, tree_weights[e])
-            print str(undirected_tree.NumVertices()) + ' vertices in undirected clonal tree'
+            print(str(undirected_tree.NumVertices()) + ' vertices in undirected clonal tree')
             if undirected_tree.NumVertices() == 0:
-                print "WARN: tree is empty"
+                print("WARN: tree is empty")
                 continue
             root_finder = clonal_tree_utils.SimpleRootComputer(undirected_tree)
             directed_tree = clonal_tree_utils.DirectedClonalTree(undirected_tree, root_finder.GetRoot())

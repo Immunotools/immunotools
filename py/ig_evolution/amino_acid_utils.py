@@ -148,7 +148,7 @@ class AADiversityAnalyzer:
                     num_shared_aa += 1
             frac_shared_aa.append((float(num_shared_aa) / tree.VertexDegree(v), tree.VertexDegree(v)))
         return frac_shared_aa
-        print "Fraction of shared aa seqs: " + str(frac_shared_aa)
+        print("Fraction of shared aa seqs: " + str(frac_shared_aa))
 
     def OutputNumCodonsPerAAPosition(self, output_fname):
         tree = self.full_length_lineage.UndirectedClonalTree()
@@ -194,10 +194,10 @@ class AminoAcidTreeConstructor:
         for aa in aa_dict:
             if aa_dict.GetAAMultiplicity(aa) < self.min_aa_mult:
                 continue
-            print "Processing aa with multiplicity " + str(aa_dict.GetAAMultiplicity(aa)) + '...' 
+            print("Processing aa with multiplicity " + str(aa_dict.GetAAMultiplicity(aa)) + '...') 
             seq_ids = aa_dict.GetIdsByAA(aa)
-            print "V genes: " + str(set([full_length_lineage.Dataset().GetGeneHitBySeqName(seq_id, dataset.AnnotatedGene.V) for seq_id in seq_ids]))
-            print "J genes: " + str(set([full_length_lineage.Dataset().GetGeneHitBySeqName(seq_id, dataset.AnnotatedGene.J) for seq_id in seq_ids]))
+            print("V genes: " + str(set([full_length_lineage.Dataset().GetGeneHitBySeqName(seq_id, dataset.AnnotatedGene.V) for seq_id in seq_ids])))
+            print("J genes: " + str(set([full_length_lineage.Dataset().GetGeneHitBySeqName(seq_id, dataset.AnnotatedGene.J) for seq_id in seq_ids])))
             seqs = [full_length_lineage.GetFullLengthSequenceByName(seq_id).seq for seq_id in seq_ids]
             hgraph, distance_dict = self._ConstructGraph(seqs)
             distances = []

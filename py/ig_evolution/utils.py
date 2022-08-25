@@ -15,7 +15,7 @@ from Bio.Seq import Seq
 #########################################################################
 def HammingDistance(seq1, seq2):
     if len(seq1) != len(seq2):
-        print "ERROR: sequences " + seq1 + ' & ' + seq2 + ' have different lengths'
+        print("ERROR: sequences " + seq1 + ' & ' + seq2 + ' have different lengths')
         sys.exit(1)
     dist = 0
     for i in range(len(seq1)):
@@ -34,7 +34,7 @@ def EditDistance(seq1, seq2):
 ##########################################################################
 def GetColorByNormalizedValue(cmap_name, norm_value):
     if norm_value < 0 or norm_value > 1:
-        print "ERROR: value " + str(norm_value) + ' does not belong to [0, 1]'
+        print("ERROR: value " + str(norm_value) + ' does not belong to [0, 1]')
     cmap = plt.cm.get_cmap(cmap_name)
     color = cmap(norm_value) 
     return mplt.colors.rgb2hex(color[:3])
