@@ -43,7 +43,7 @@ def LociParamIsIg(loci_str):
 organism_dict = {'human' : 'human', 'mouse' : 'mouse', 'rat' : 'rat',
                  'rabbit' : 'rabbit', 'rhesus-monkey' : 'rhesus_monkey',
                  'cattle' : 'cattle', 'RM' : 'RM', 'RM-Bernat' : 'RM_Bernat', 
-                 'horse' : 'horse'}
+                 'horse' : 'horse', 'wfmouse' : 'wfmouse'}
 
 def OrganismParamCorrect(org_str):
     return org_str in organism_dict

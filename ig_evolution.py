@@ -83,7 +83,7 @@ class AlgorithmConfig:
         self.max_cdr3_len = 120
         self.divan_dir = ''
         self.output_dir = ''
-        self.num_lineages = sys.maxint
+        self.num_lineages = 100000000 #sys.maxint
         self.remove_aux_files = True
         self._ParseArgs(args)
         self._PrintArgs()
@@ -177,12 +177,13 @@ def main(argv):
     lineage_stats.OutputStats(os.path.join(output_dirs['main_dir'], 'raw_lineage_stats.txt'))
     lineage_stats.OutputClonalLineageAssignment(os.path.join(output_dirs['main_dir'], 'lineage_assignment.txt'))
 
-    clonal_graph_utils.OutputAbundantAAGraphs(full_length_lineages, output_dirs, config)
-
-    print("Compiling HTML report...")
-    dir_dict = {'labels' : output_dirs['coloring_label'], 'multiplicity' : output_dirs['coloring_mult'], 'compressed' : output_dirs['compressed'], 'shm_matrix' : output_dirs['shm_matrix'], 'shm_plot' : output_dirs['shm_plot']}
-    html = html_writer.HTMLWriter(os.path.basename(output_dirs['clonal_graphs']), dir_dict, '.svg', ['shm_matrix', 'shm_plot'])
-    html.CreateHTMLReports(output_dirs['htmls'])
+#    return
+#    clonal_graph_utils.OutputAbundantAAGraphs(full_length_lineages, output_dirs, config)
+#
+#    print("Compiling HTML report...")
+#    dir_dict = {'labels' : output_dirs['coloring_label'], 'multiplicity' : output_dirs['coloring_mult'], 'compressed' : output_dirs['compressed'], 'shm_matrix' : output_dirs['shm_matrix'], 'shm_plot' : output_dirs['shm_plot']}
+#    html = html_writer.HTMLWriter(os.path.basename(output_dirs['clonal_graphs']), dir_dict, '.svg', ['shm_matrix', 'shm_plot'])
+#    html.CreateHTMLReports(output_dirs['htmls'])
 
     if config.remove_aux_files:
         print("Removing auxiliary directories...")
