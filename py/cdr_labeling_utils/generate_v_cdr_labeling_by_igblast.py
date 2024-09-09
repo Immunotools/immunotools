@@ -20,6 +20,13 @@ class Block:
     def GetBoundsByRegion(self, r):
         return self.region_dict[r]
 
+    def Complete(self):
+        for region in self.regions:
+            if region not in self.region_dict:
+                print('WARN: ' + region + ' was not found in ' + self.query)
+                return False
+        return True
+
     def __repr__(self):
         return self.query + ': ' + str(self.region_dict)
 
@@ -30,7 +37,7 @@ def LineIsQuery(line):
     return StringHasPrefix(line, '# Query:')
 
 def GetChain(seq_id):
-    chain_dict = {'IGHV' : 'VH', 'IGKV' : 'VK', 'IGLV' : 'VL'}
+    chain_dict = {'IGHV' : 'VH', 'IGKV' : 'VK', 'IGLV' : 'VL', 'TRAV' : 'VA', 'TRBV' : 'VB', 'TRGV' : 'VG', 'TRDV' : 'VD'}
     for v in chain_dict:
         if seq_id.find(v) != -1:
             return chain_dict[v]
@@ -65,6 +72,8 @@ print(len(blocks))
 
 output_fh = open(output_fname, 'w')
 for b in blocks:
+    if not b.Complete():
+        continue
     output_fh.write(b.query + '\t')
     for r in b:
         bounds = b.GetBoundsByRegion(r)
