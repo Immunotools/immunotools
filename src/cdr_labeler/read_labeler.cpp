@@ -62,7 +62,27 @@ namespace cdr_labeler {
         annotation_utils::CDRAnnotatedCloneSet clone_set;
         for(size_t i = 0; i < alignment_info.NumVJHits(); i++) {
             auto vj_hit = alignment_info.GetVJHitsByIndex(i);
-            clone_set.AddClone(CreateAnnotatedClone(vj_hit));
+            auto v_hit = vj_hit.GetVHitByIndex(0);
+            auto v_alignment = alignment_converter_.ConvertToAlignment(v_hit.ImmuneGene(),
+                                                                       vj_hit.Read(),
+                                                                       v_hit.BlockAlignment());
+            auto v_cdr_labeling = v_labeling_.GetLabelingByGene(v_hit.ImmuneGene());
+            annotation_utils::CDRRange read_cdr1(v_alignment.QueryPositionBySubjectPosition(v_cdr_labeling.cdr1.start_pos),
+                                                 v_alignment.QueryPositionBySubjectPosition(v_cdr_labeling.cdr1.end_pos));
+            annotation_utils::CDRRange read_cdr2(v_alignment.QueryPositionBySubjectPosition(v_cdr_labeling.cdr2.start_pos),
+                                                 v_alignment.QueryPositionBySubjectPosition(v_cdr_labeling.cdr2.end_pos));
+            auto j_hit = vj_hit.GetJHitByIndex(0);
+            auto j_alignment = alignment_converter_.ConvertToAlignment(j_hit.ImmuneGene(),
+                                                                       vj_hit.Read(),
+                                                                       j_hit.BlockAlignment());
+            auto j_cdr_labeling = j_labeling_.GetLabelingByGene(j_hit.ImmuneGene());
+            annotation_utils::CDRRange read_cdr3(v_alignment.QueryPositionBySubjectPosition(v_cdr_labeling.cdr3.start_pos),
+                                                 j_alignment.QueryPositionBySubjectPosition(j_cdr_labeling.cdr3.end_pos));
+            auto cdr_labeling = annotation_utils::CDRLabeling(read_cdr1, read_cdr2, read_cdr3);
+            if(cdr_labeling.Valid()) {
+                auto annotated_clone = clone_calculator_.ComputeAnnotatedClone(vj_hit.Read(), cdr_labeling, v_alignment, j_alignment);
+                clone_set.AddClone(annotated_clone);
+            }
         }
         INFO(clone_set.size() << " annotated sequences were created");
         return clone_set;
