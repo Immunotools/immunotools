@@ -2,7 +2,6 @@ import os
 import sys
 import shutil
 import logging
-import imp
 
 home_directory = os.path.abspath(os.path.dirname(os.path.realpath(__file__))) + '/'
 py_src = os.path.join(home_directory, "py/pipeline/")

@@ -79,7 +79,7 @@ namespace cdr_labeler {
             annotation_utils::CDRRange read_cdr3(v_alignment.QueryPositionBySubjectPosition(v_cdr_labeling.cdr3.start_pos),
                                                  j_alignment.QueryPositionBySubjectPosition(j_cdr_labeling.cdr3.end_pos));
             auto cdr_labeling = annotation_utils::CDRLabeling(read_cdr1, read_cdr2, read_cdr3);
-            if(cdr_labeling.Valid()) {
+            if(cdr_labeling.cdr1.Valid() && cdr_labeling.cdr2.Valid() && cdr_labeling.cdr3.Valid()) {
                 auto annotated_clone = clone_calculator_.ComputeAnnotatedClone(vj_hit.Read(), cdr_labeling, v_alignment, j_alignment);
                 clone_set.AddClone(annotated_clone);
             }

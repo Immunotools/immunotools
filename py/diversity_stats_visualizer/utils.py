@@ -1,6 +1,6 @@
 import logging
 import sys
-import imp
+import importlib as imp
 
 import matplotlib as mplt
 mplt.use('Agg')
@@ -41,7 +41,7 @@ hydro_max = 100
 ###################################################
 def CheckPackageFatal(package_name, log):
     try:
-        imp.find_module(package_name)
+        imp.util.find_spec(package_name)
         found = True
     except ImportError:
         found = False

@@ -30,6 +30,7 @@ test_dir = "divan_test"
 tool_name = "Diversity Analyzer"
 
 def CheckBinariesExistance(params, log):
+    print(cdr_labeler_bin)
     if not os.path.exists(cdr_labeler_bin) or not os.path.exists(hgc_bin):
         log.info("ERROR: Binary files were not found. Please compile " + tool_name + " before running.")
         sys.exit(1)
