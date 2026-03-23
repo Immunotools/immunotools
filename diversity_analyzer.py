@@ -44,7 +44,8 @@ def LociParamIsIg(loci_str):
 organism_dict = {'human' : 'human', 'mouse' : 'mouse', 'rat' : 'rat',
                  'rabbit' : 'rabbit', 'rhesus-monkey' : 'rhesus_monkey',
                  'cattle' : 'cattle', 'RM' : 'RM', 'RM-Bernat' : 'RM_Bernat', 
-                 'horse' : 'horse', 'wfmouse' : 'wfmouse', 'bighorn' : 'bighorn'}
+                 'horse' : 'horse', 'wfmouse' : 'wfmouse', 'bighorn' : 'bighorn',
+                 'ferret-new' : 'ferret_new'}
 
 def OrganismParamCorrect(org_str):
     return org_str in organism_dict
@@ -213,7 +214,7 @@ def main(argv):
                                type=str,
                                default="human",
                                dest="organism",
-                               help="Organism: human, mouse, rat, rabbit, rhesus-monkey (for IMGT database), RM-Bernat (for the database by Bernat et al, Immunity, 2021), cattle [default: %(default)s]")
+                               help="Organism: human, mouse, rat, rabbit, rhesus-monkey (for IMGT database), RM-Bernat (for the database by Bernat et al, Immunity, 2021), cattle [default: %(default)s], ferret-new (new annotation of the HiFi assembly)")
 
     optional_args.add_argument('--skip-plots',
                                action='store_const',
