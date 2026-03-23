@@ -6,7 +6,7 @@ gene_fasta = sys.argv[1]
 output_fname = sys.argv[2]
 chain = sys.argv[3]
 
-chain_dict = {'IGH' : ['TGGGGC'], 'IGK' : ['TTAGG', 'TTAGG', 'TTCGG', 'TTTGG'], 'IGL' : ['TTAGG', 'TTCGG', 'TTCAT'], 'TRA' : ['TTTGG', 'TTCGG', 'TTCAG'], 'TRB' : ['TTTGG', 'TTCGG', 'TTCAG'], 'TRG' : ['TTTGG', 'TTCGG', 'TTGGA']}
+chain_dict = {'IGH' : ['TGGGGC'], 'IGK' : ['TTAGG', 'TTCAG', 'TTCGG', 'TTTGG'], 'IGL' : ['TTAGG', 'TTCGG', 'TTCAT', 'TTCTG'], 'TRA' : ['TTTGG', 'TTCGG', 'TTCAG'], 'TRB' : ['TTTGG', 'TTCGG', 'TTCAG'], 'TRG' : ['TTTGG', 'TTCGG', 'TTGGA']}
 chain_id_dict = {'IGH' : 'HJ', 'IGK' : 'KJ', 'IGL' : 'LJ', 'TRA' : 'AJ', 'TRB' : 'BJ', 'TRG' : 'GJ', 'TRD' : 'DJ'}
 
 aligned_genes = []
