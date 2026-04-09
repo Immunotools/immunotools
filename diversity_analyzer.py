@@ -45,7 +45,9 @@ organism_dict = {'human' : 'human', 'mouse' : 'mouse', 'rat' : 'rat',
                  'rabbit' : 'rabbit', 'rhesus-monkey' : 'rhesus_monkey',
                  'cattle' : 'cattle', 'RM' : 'RM', 'RM-Bernat' : 'RM_Bernat', 
                  'horse' : 'horse', 'wfmouse' : 'wfmouse', 'bighorn' : 'bighorn',
-                 'ferret-new' : 'ferret_new'}
+                 'ferret-new' : 'ferret_new', 'bff' : 'black_footed_ferret',
+                 'gray-wolf' : 'gray_wolf', 'maned-wolf' : 'maned_wolf', 
+                 'red-panda' : 'red_panda', 'sloth-bear' : 'sloth_bear'}
 
 def OrganismParamCorrect(org_str):
     return org_str in organism_dict
